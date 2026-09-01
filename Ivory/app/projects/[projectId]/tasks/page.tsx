@@ -48,7 +48,11 @@ export default async function TasksPage({
         members={memberList}
         phases={phases ?? []}
       />
-      <KanbanBoard tasks={(tasks as any) ?? []} />
+      <KanbanBoard
+        tasks={(tasks as any) ?? []}
+        members={memberList}
+        phases={phases ?? []}
+      />
     </div>
   );
 }

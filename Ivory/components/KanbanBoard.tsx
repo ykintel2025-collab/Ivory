@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Badge from "@/components/Badge";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 type Task = {
   id: string;
@@ -13,10 +14,15 @@ type Task = {
   status: "te_doen" | "mee_bezig" | "klaar";
   urgency: string | null;
   due_date: string | null;
+  owner_id: string | null;
+  phase_id: number | null;
   phases: { number: number; name: string } | null;
   profiles: { full_name: string } | null;
   blocked_by_id: string | null;
 };
+
+type Member = { user_id: string; full_name: string };
+type Phase = { id: number; number: number; name: string };
 
 const COLUMNS: { key: Task["status"]; label: string }[] = [
   { key: "te_doen", label: "Te doen" },
@@ -24,7 +30,15 @@ const COLUMNS: { key: Task["status"]; label: string }[] = [
   { key: "klaar", label: "Klaar" },
 ];
 
-export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
+export default function KanbanBoard({
+  tasks,
+  members = [],
+  phases = [],
+}: {
+  tasks: Task[];
+  members?: Member[];
+  phases?: Phase[];
+}) {
   const supabase = createClient();
   const router = useRouter();
   const [updating, setUpdating] = useState<string | null>(null);
@@ -61,6 +75,56 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                     </p>
                     <div className="flex shrink-0 items-center gap-1">
                       {task.urgency === "urgent" && <Badge value="urgent" />}
+                      <EditModal
+                        table="tasks"
+                        id={task.id}
+                        title="Taak bewerken"
+                        initialValues={{
+                          title: task.title,
+                          description: task.description,
+                          urgency: task.urgency,
+                          due_date: task.due_date,
+                          owner_id: task.owner_id,
+                          phase_id: task.phase_id ? String(task.phase_id) : "",
+                        }}
+                        fields={[
+                          { key: "title", label: "Titel", type: "text" },
+                          { key: "description", label: "Omschrijving", type: "textarea" },
+                          {
+                            key: "urgency",
+                            label: "Urgentie",
+                            type: "select",
+                            options: [
+                              { value: "normaal", label: "Normaal" },
+                              { value: "hoog", label: "Hoog" },
+                              { value: "urgent", label: "Urgent" },
+                            ],
+                          },
+                          { key: "due_date", label: "Deadline", type: "date" },
+                          {
+                            key: "owner_id",
+                            label: "Toegewezen aan",
+                            type: "select",
+                            options: [
+                              { value: "", label: "Niemand" },
+                              ...members.map((m) => ({
+                                value: m.user_id,
+                                label: m.full_name,
+                              })),
+                            ],
+                          },
+                          {
+                            key: "phase_id",
+                            label: "Fase",
+                            type: "select",
+                            numeric: true,
+                            options: phases.map((p) => ({
+                              value: String(p.id),
+                              label: `Fase ${p.number} — ${p.name}`,
+                            })),
+                          },
+                        ]}
+                      />
                       <DeleteButton table="tasks" id={task.id} />
                     </div>
                   </div>

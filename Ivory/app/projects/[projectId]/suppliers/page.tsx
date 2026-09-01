@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AddEquipmentForm from "@/components/AddEquipmentForm";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,32 @@ export default async function SuppliersPage({
                     : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  <DeleteButton table="equipment_items" id={item.id} />
+                  <div className="flex items-center gap-1">
+                    <EditModal
+                      table="equipment_items"
+                      id={item.id}
+                      title="Apparatuur bewerken"
+                      initialValues={{
+                        line_code: item.line_code,
+                        description: item.description,
+                        department: item.department,
+                        supplier: item.supplier,
+                        model: item.model,
+                        certification_status: item.certification_status,
+                        price_estimate: item.price_estimate,
+                      }}
+                      fields={[
+                        { key: "line_code", label: "Code", type: "text" },
+                        { key: "description", label: "Omschrijving", type: "text" },
+                        { key: "department", label: "Afdeling", type: "text" },
+                        { key: "supplier", label: "Leverancier", type: "text" },
+                        { key: "model", label: "Model", type: "text" },
+                        { key: "certification_status", label: "Certificering", type: "text" },
+                        { key: "price_estimate", label: "Prijsindicatie (EUR)", type: "number" },
+                      ]}
+                    />
+                    <DeleteButton table="equipment_items" id={item.id} />
+                  </div>
                 </td>
               </tr>
             ))}

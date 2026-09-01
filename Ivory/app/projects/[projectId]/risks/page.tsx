@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/Badge";
 import AddRiskForm from "@/components/AddRiskForm";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +83,58 @@ export default async function RisksPage({
                   {r.profiles?.full_name ?? "—"}
                 </td>
                 <td className="px-4 py-3">
-                  <DeleteButton table="risks" id={r.id} />
+                  <div className="flex items-center gap-1">
+                    <EditModal
+                      table="risks"
+                      id={r.id}
+                      title="Risico bewerken"
+                      initialValues={{
+                        title: r.title,
+                        description: r.description,
+                        rating: r.rating,
+                        status: r.status,
+                        mitigation: r.mitigation,
+                        owner_id: r.owner_id,
+                      }}
+                      fields={[
+                        { key: "title", label: "Titel", type: "text" },
+                        { key: "description", label: "Omschrijving", type: "textarea" },
+                        {
+                          key: "rating",
+                          label: "Score",
+                          type: "select",
+                          options: [
+                            { value: "hoog", label: "Hoog" },
+                            { value: "midden", label: "Midden" },
+                            { value: "laag", label: "Laag" },
+                          ],
+                        },
+                        {
+                          key: "status",
+                          label: "Status",
+                          type: "select",
+                          options: [
+                            { value: "open", label: "Open" },
+                            { value: "opgelost", label: "Opgelost" },
+                          ],
+                        },
+                        { key: "mitigation", label: "Mitigatie", type: "textarea" },
+                        {
+                          key: "owner_id",
+                          label: "Eigenaar",
+                          type: "select",
+                          options: [
+                            { value: "", label: "Niemand" },
+                            ...memberList.map((m) => ({
+                              value: m.user_id,
+                              label: m.full_name,
+                            })),
+                          ],
+                        },
+                      ]}
+                    />
+                    <DeleteButton table="risks" id={r.id} />
+                  </div>
                 </td>
               </tr>
             ))}

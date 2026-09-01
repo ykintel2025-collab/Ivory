@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import DeleteButton from "@/components/DeleteButton";
 import AddNewContactForm from "@/components/AddNewContactForm";
 import AssignContactForm from "@/components/AssignContactForm";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -110,14 +111,38 @@ export default async function PartiesPage({
               key={pc.id}
               className="relative rounded-lg border border-ivory-line p-3"
             >
-              <div className="absolute right-2 top-2">
+              <div className="absolute right-2 top-2 flex items-center gap-1">
+                <EditModal
+                  table="project_contacts"
+                  id={pc.id}
+                  title={`${pc.contacts?.name} — rol in dit project`}
+                  initialValues={{
+                    role: pc.role,
+                    status: pc.status,
+                    notes: pc.notes,
+                  }}
+                  fields={[
+                    { key: "role", label: "Rol in dit project", type: "text" },
+                    {
+                      key: "status",
+                      label: "Status",
+                      type: "select",
+                      options: [
+                        { value: "actief", label: "Actief" },
+                        { value: "in gesprek", label: "In gesprek" },
+                        { value: "inactief", label: "Inactief" },
+                      ],
+                    },
+                    { key: "notes", label: "Notities", type: "textarea" },
+                  ]}
+                />
                 <DeleteButton
                   table="project_contacts"
                   id={pc.id}
                   confirmText={`${pc.contacts?.name} loskoppelen van dit project? De relatie zelf blijft bestaan.`}
                 />
               </div>
-              <div className="mb-1 flex items-center gap-2 pr-6">
+              <div className="mb-1 flex items-center gap-2 pr-12">
                 <p className="text-sm font-medium text-ink">
                   {pc.contacts?.name}
                 </p>

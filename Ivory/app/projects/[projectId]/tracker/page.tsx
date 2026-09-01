@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/Badge";
 import AddRegistrationForm from "@/components/AddRegistrationForm";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,52 @@ export default async function TrackerPage({
                   {r.profiles?.full_name ?? "—"}
                 </td>
                 <td className="px-4 py-3">
-                  <DeleteButton table="registrations" id={r.id} />
+                  <div className="flex items-center gap-1">
+                    <EditModal
+                      table="registrations"
+                      id={r.id}
+                      title="Registratie bewerken"
+                      initialValues={{
+                        item_name: r.item_name,
+                        device_class: r.device_class,
+                        registration_status: r.registration_status,
+                        expected_completion: r.expected_completion,
+                        owner_id: r.owner_id,
+                        notes: r.notes,
+                      }}
+                      fields={[
+                        { key: "item_name", label: "Item / apparaat", type: "text" },
+                        { key: "device_class", label: "Klasse", type: "text" },
+                        {
+                          key: "registration_status",
+                          label: "Status",
+                          type: "select",
+                          options: [
+                            { value: "niet_gestart", label: "Niet gestart" },
+                            { value: "in_aanvraag", label: "In aanvraag" },
+                            { value: "ingediend", label: "Ingediend" },
+                            { value: "goedgekeurd", label: "Goedgekeurd" },
+                            { value: "afgewezen", label: "Afgewezen" },
+                          ],
+                        },
+                        { key: "expected_completion", label: "Verwacht klaar", type: "date" },
+                        {
+                          key: "owner_id",
+                          label: "Eigenaar",
+                          type: "select",
+                          options: [
+                            { value: "", label: "Niemand" },
+                            ...memberList.map((m) => ({
+                              value: m.user_id,
+                              label: m.full_name,
+                            })),
+                          ],
+                        },
+                        { key: "notes", label: "Notities", type: "textarea" },
+                      ]}
+                    />
+                    <DeleteButton table="registrations" id={r.id} />
+                  </div>
                 </td>
               </tr>
             ))}

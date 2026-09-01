@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AddScopeItemForm from "@/components/AddScopeItemForm";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,36 @@ export default async function ScopePage({
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <DeleteButton table="scope_items" id={item.id} />
+                  <div className="flex items-center gap-1">
+                    <EditModal
+                      table="scope_items"
+                      id={item.id}
+                      title="Scope-item bewerken"
+                      initialValues={{
+                        item_name: item.item_name,
+                        in_scope: String(item.in_scope),
+                        explanation: item.explanation,
+                        source_reference: item.source_reference,
+                        source_date: item.source_date,
+                      }}
+                      fields={[
+                        { key: "item_name", label: "Item", type: "text" },
+                        {
+                          key: "in_scope",
+                          label: "Status",
+                          type: "boolean",
+                          options: [
+                            { value: "true", label: "In scope" },
+                            { value: "false", label: "Buiten scope" },
+                          ],
+                        },
+                        { key: "explanation", label: "Toelichting", type: "textarea" },
+                        { key: "source_reference", label: "Bron", type: "text" },
+                        { key: "source_date", label: "Brondatum", type: "date" },
+                      ]}
+                    />
+                    <DeleteButton table="scope_items" id={item.id} />
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
+import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
 
@@ -34,14 +35,35 @@ export default async function ContactsPage() {
               key={c.id}
               className="relative rounded-xl border border-ivory-line bg-ivory-card p-5 shadow-sm"
             >
-              <div className="absolute right-4 top-4">
+              <div className="absolute right-4 top-4 flex items-center gap-1">
+                <EditModal
+                  table="contacts"
+                  id={c.id}
+                  title="Relatie bewerken"
+                  initialValues={{
+                    name: c.name,
+                    type: c.type,
+                    contact_name: c.contact_name,
+                    contact_email: c.contact_email,
+                    contact_phone: c.contact_phone,
+                    notes: c.notes,
+                  }}
+                  fields={[
+                    { key: "name", label: "Naam", type: "text" },
+                    { key: "type", label: "Type / rol algemeen", type: "text" },
+                    { key: "contact_name", label: "Contactpersoon", type: "text" },
+                    { key: "contact_email", label: "E-mail", type: "text" },
+                    { key: "contact_phone", label: "Telefoon", type: "text" },
+                    { key: "notes", label: "Notities", type: "textarea" },
+                  ]}
+                />
                 <DeleteButton
                   table="contacts"
                   id={c.id}
                   confirmText={`${c.name} volledig verwijderen? Dit verwijdert ook de koppeling met alle projecten.`}
                 />
               </div>
-              <div className="pr-8">
+              <div className="pr-16">
                 <p className="font-display text-lg text-ink">{c.name}</p>
                 {c.type && <p className="text-xs text-ink/50">{c.type}</p>}
                 {c.contact_name && (
