@@ -1,0 +1,88 @@
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import DeleteButton from "@/components/DeleteButton";
+
+export const dynamic = "force-dynamic";
+
+export default async function ContactsPage() {
+  const supabase = createClient();
+
+  const { data: contacts } = await supabase
+    .from("contacts")
+    .select("*, project_contacts(project_id, role, projects(id, name))")
+    .order("name");
+
+  return (
+    <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div>
+          <Link href="/projects" className="text-xs font-medium text-ink/40 hover:text-ink">
+            ← Dashboard
+          </Link>
+          <h1 className="mt-2 font-display text-2xl text-ink">
+            Relaties
+          </h1>
+          <p className="text-sm text-ink/50">
+            Alle partijen, algemeen — wijs ze per project toe vanuit de
+            Partijen-pagina van dat project.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {(contacts ?? []).map((c: any) => (
+            <div
+              key={c.id}
+              className="relative rounded-xl border border-ivory-line bg-ivory-card p-5 shadow-sm"
+            >
+              <div className="absolute right-4 top-4">
+                <DeleteButton
+                  table="contacts"
+                  id={c.id}
+                  confirmText={`${c.name} volledig verwijderen? Dit verwijdert ook de koppeling met alle projecten.`}
+                />
+              </div>
+              <div className="pr-8">
+                <p className="font-display text-lg text-ink">{c.name}</p>
+                {c.type && <p className="text-xs text-ink/50">{c.type}</p>}
+                {c.contact_name && (
+                  <p className="mt-1 text-xs text-ink/40">
+                    {c.contact_name}
+                    {c.contact_email && ` · ${c.contact_email}`}
+                    {c.contact_phone && ` · ${c.contact_phone}`}
+                  </p>
+                )}
+                {c.notes && <p className="mt-2 text-xs text-ink/50">{c.notes}</p>}
+
+                {c.project_contacts?.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {c.project_contacts.map((pc: any) => (
+                      <Link
+                        key={pc.project_id}
+                        href={`/projects/${pc.project_id}/parties`}
+                        className="rounded-full bg-gold-soft px-2.5 py-1 text-xs font-medium text-gold hover:opacity-80"
+                      >
+                        {pc.projects?.name}
+                        {pc.role ? ` — ${pc.role}` : ""}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {(!c.project_contacts || c.project_contacts.length === 0) && (
+                  <p className="mt-3 text-xs text-ink/30">
+                    Nog aan geen enkel project gekoppeld.
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+          {(contacts ?? []).length === 0 && (
+            <p className="text-sm text-ink/40">
+              Nog geen relaties. Voeg er een toe via de Partijen-pagina van een
+              project.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

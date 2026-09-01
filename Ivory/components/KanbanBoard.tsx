@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Badge from "@/components/Badge";
+import DeleteButton from "@/components/DeleteButton";
 
 type Task = {
   id: string;
@@ -13,6 +14,7 @@ type Task = {
   urgency: string | null;
   due_date: string | null;
   phases: { number: number; name: string } | null;
+  profiles: { full_name: string } | null;
   blocked_by_id: string | null;
 };
 
@@ -39,7 +41,10 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
       {COLUMNS.map((col) => {
         const colTasks = tasks.filter((t) => t.status === col.key);
         return (
-          <div key={col.key} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div
+            key={col.key}
+            className="rounded-xl border border-ivory-line bg-ivory-card p-4 shadow-sm"
+          >
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-display text-lg text-ink">{col.label}</h2>
               <span className="text-xs text-ink/40">{colTasks.length}</span>
@@ -54,7 +59,10 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                     <p className="text-sm font-medium text-ink">
                       {task.title}
                     </p>
-                    {task.urgency === "urgent" && <Badge value="urgent" />}
+                    <div className="flex shrink-0 items-center gap-1">
+                      {task.urgency === "urgent" && <Badge value="urgent" />}
+                      <DeleteButton table="tasks" id={task.id} />
+                    </div>
                   </div>
                   {task.description && (
                     <p className="mb-2 text-xs text-ink/50">
@@ -62,8 +70,9 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                     </p>
                   )}
                   <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-ink/40">
-                    {task.phases && (
-                      <span>Fase {task.phases.number}</span>
+                    {task.phases && <span>Fase {task.phases.number}</span>}
+                    {task.profiles?.full_name && (
+                      <span>· {task.profiles.full_name}</span>
                     )}
                     {task.due_date && (
                       <span>
@@ -71,16 +80,16 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                       </span>
                     )}
                     {task.blocked_by_id && (
-                      <span className="text-red-500">· Geblokkeerd</span>
+                      <span className="text-brick">· Geblokkeerd</span>
                     )}
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {COLUMNS.filter((c) => c.key !== task.status).map((c) => (
                       <button
                         key={c.key}
                         disabled={updating === task.id}
                         onClick={() => moveTask(task.id, c.key)}
-                        className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-ink/70 hover:bg-slate-200 disabled:opacity-50"
+                        className="rounded-md bg-ivory px-2 py-1 text-xs font-medium text-ink/70 hover:bg-ivory-line disabled:opacity-50"
                       >
                         → {c.label}
                       </button>

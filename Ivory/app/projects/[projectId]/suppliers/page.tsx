@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import AddEquipmentForm from "@/components/AddEquipmentForm";
+import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,8 @@ export default async function SuppliersPage({
         <p className="text-sm text-ink/50">Kernitems per afdeling</p>
       </div>
 
+      <AddEquipmentForm projectId={params.projectId} />
+
       <div className="overflow-x-auto rounded-xl border border-ivory-line bg-ivory-card shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-ivory-line bg-ivory text-xs uppercase tracking-wide text-ink/50">
@@ -34,6 +38,7 @@ export default async function SuppliersPage({
               <th className="px-4 py-3">Model</th>
               <th className="px-4 py-3">Certificering</th>
               <th className="px-4 py-3">Prijsindicatie</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -62,11 +67,14 @@ export default async function SuppliersPage({
                       )}`
                     : "—"}
                 </td>
+                <td className="px-4 py-3">
+                  <DeleteButton table="equipment_items" id={item.id} />
+                </td>
               </tr>
             ))}
             {(items ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-ink/40">
+                <td colSpan={8} className="px-4 py-6 text-center text-ink/40">
                   Nog geen apparatuur toegevoegd.
                 </td>
               </tr>

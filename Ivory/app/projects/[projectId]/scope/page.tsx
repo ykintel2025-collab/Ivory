@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import AddScopeItemForm from "@/components/AddScopeItemForm";
+import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,8 @@ export default async function ScopePage({
         </p>
       </div>
 
+      <AddScopeItemForm projectId={params.projectId} />
+
       <div className="overflow-x-auto rounded-xl border border-ivory-line bg-ivory-card shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-ivory-line bg-ivory text-xs uppercase tracking-wide text-ink/50">
@@ -31,6 +35,7 @@ export default async function ScopePage({
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Toelichting</th>
               <th className="px-4 py-3">Bron</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -44,7 +49,7 @@ export default async function ScopePage({
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       item.in_scope
                         ? "bg-teal-soft text-teal"
-                        : "bg-slate-100 text-ink/50"
+                        : "bg-ink/5 text-ink/50"
                     }`}
                   >
                     {item.in_scope ? "In scope" : "Buiten scope"}
@@ -60,11 +65,14 @@ export default async function ScopePage({
                     </>
                   )}
                 </td>
+                <td className="px-4 py-3">
+                  <DeleteButton table="scope_items" id={item.id} />
+                </td>
               </tr>
             ))}
             {(items ?? []).length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-ink/40">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink/40">
                   Nog geen scope-items toegevoegd.
                 </td>
               </tr>

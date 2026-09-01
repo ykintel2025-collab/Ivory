@@ -24,7 +24,7 @@ export default async function DashboardPage({
     supabase.from("risks").select("*").eq("project_id", projectId),
     supabase
       .from("external_blockers")
-      .select("*, parties(name)")
+      .select("*, contacts(name)")
       .eq("project_id", projectId)
       .eq("status", "open"),
     supabase

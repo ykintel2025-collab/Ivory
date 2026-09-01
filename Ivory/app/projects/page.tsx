@@ -34,7 +34,7 @@ export default async function ProjectsPage() {
       .eq("rating", "hoog"),
     supabase
       .from("external_blockers")
-      .select("*, projects(name), parties(name)")
+      .select("*, projects(name), contacts(name)")
       .eq("status", "open"),
     supabase
       .from("tasks")
@@ -67,12 +67,14 @@ export default async function ProjectsPage() {
         date: t.due_date,
         type: "Taak",
         project: t.projects?.name,
+        href: `/projects/${t.project_id}/tasks`,
       })),
     ...(registrations ?? []).map((r: any) => ({
       label: r.item_name,
       date: r.expected_completion,
       type: "Registratie",
       project: r.projects?.name,
+      href: `/projects/${r.project_id}/tracker`,
     })),
   ]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -90,11 +92,19 @@ export default async function ProjectsPage() {
   return (
     <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
       <div className="mx-auto max-w-5xl space-y-10">
-        <div>
-          <h1 className="font-display text-3xl text-ink">Dashboard</h1>
-          <p className="text-sm text-ink/50">
-            Overzicht over al je projecten heen
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl text-ink">Dashboard</h1>
+            <p className="text-sm text-ink/50">
+              Overzicht over al je projecten heen
+            </p>
+          </div>
+          <Link
+            href="/contacts"
+            className="shrink-0 rounded-lg border border-ivory-line bg-ivory-card px-4 py-2 text-sm font-medium text-ink hover:border-gold"
+          >
+            Relaties beheren
+          </Link>
         </div>
 
         {/* Globaal overzicht */}
@@ -131,16 +141,17 @@ export default async function ProjectsPage() {
             </h2>
             <div className="space-y-2">
               {(openHighRisks ?? []).slice(0, 6).map((r: any) => (
-                <div
+                <Link
                   key={r.id}
-                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
+                  href={`/projects/${r.project_id}/risks`}
+                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
                 >
                   <div>
                     <p className="text-sm text-ink/80">{r.title}</p>
                     <p className="text-xs text-ink/40">{r.projects?.name}</p>
                   </div>
                   <Badge value="hoog" />
-                </div>
+                </Link>
               ))}
               {(openHighRisks ?? []).length === 0 && (
                 <p className="text-sm text-ink/40">
@@ -160,16 +171,21 @@ export default async function ProjectsPage() {
             ) : (
               <ul className="space-y-3">
                 {upcomingDeadlines.map((d, i) => (
-                  <li key={i} className="flex items-center justify-between text-sm">
-                    <div>
-                      <p className="font-medium text-ink">{d.label}</p>
-                      <p className="text-xs text-ink/40">
-                        {d.type} · {d.project}
-                      </p>
-                    </div>
-                    <span className="text-xs font-medium text-ink/50">
-                      {new Date(d.date).toLocaleDateString("nl-NL")}
-                    </span>
+                  <li key={i}>
+                    <Link
+                      href={d.href}
+                      className="flex items-center justify-between rounded-lg text-sm transition hover:text-gold"
+                    >
+                      <div>
+                        <p className="font-medium text-ink">{d.label}</p>
+                        <p className="text-xs text-ink/40">
+                          {d.type} · {d.project}
+                        </p>
+                      </div>
+                      <span className="text-xs font-medium text-ink/50">
+                        {new Date(d.date).toLocaleDateString("nl-NL")}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -185,18 +201,19 @@ export default async function ProjectsPage() {
             </h2>
             <div className="space-y-2">
               {(openBlockers ?? []).map((b: any) => (
-                <div
+                <Link
                   key={b.id}
-                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
+                  href={`/projects/${b.project_id}/parties`}
+                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
                 >
                   <div>
                     <p className="text-sm text-ink/80">{b.title}</p>
                     <p className="text-xs text-ink/40">
-                      {b.projects?.name} · wacht op {b.parties?.name ?? "onbekend"}
+                      {b.projects?.name} · wacht op {b.contacts?.name ?? "onbekend"}
                     </p>
                   </div>
                   <Badge value="open" />
-                </div>
+                </Link>
               ))}
             </div>
           </div>

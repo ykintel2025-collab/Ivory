@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/Badge";
+import AddRiskForm from "@/components/AddRiskForm";
+import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +13,25 @@ export default async function RisksPage({
   params: { projectId: string };
 }) {
   const supabase = createClient();
-  const { data: risks } = await supabase
-    .from("risks")
-    .select("*, profiles(full_name)")
-    .eq("project_id", params.projectId)
-    .order("status")
-    .order("created_at", { ascending: false });
+  const projectId = params.projectId;
+
+  const [{ data: risks }, { data: members }] = await Promise.all([
+    supabase
+      .from("risks")
+      .select("*, profiles(full_name)")
+      .eq("project_id", projectId)
+      .order("status")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("project_members")
+      .select("user_id, profiles(full_name)")
+      .eq("project_id", projectId),
+  ]);
+
+  const memberList = (members ?? []).map((m: any) => ({
+    user_id: m.user_id,
+    full_name: m.profiles?.full_name ?? "Onbekend",
+  }));
 
   const sorted = [...(risks ?? [])].sort(
     (a, b) => RATING_ORDER[a.rating] - RATING_ORDER[b.rating]
@@ -31,6 +46,8 @@ export default async function RisksPage({
         </p>
       </div>
 
+      <AddRiskForm projectId={projectId} members={memberList} />
+
       <div className="overflow-x-auto rounded-xl border border-ivory-line bg-ivory-card shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-ivory-line bg-ivory text-xs uppercase tracking-wide text-ink/50">
@@ -40,10 +57,11 @@ export default async function RisksPage({
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Mitigatie</th>
               <th className="px-4 py-3">Eigenaar</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r) => (
+            {sorted.map((r: any) => (
               <tr key={r.id} className="border-b border-ivory-line align-top">
                 <td className="px-4 py-3 font-medium text-ink">
                   {r.title}
@@ -63,11 +81,14 @@ export default async function RisksPage({
                 <td className="px-4 py-3 text-ink/50">
                   {r.profiles?.full_name ?? "—"}
                 </td>
+                <td className="px-4 py-3">
+                  <DeleteButton table="risks" id={r.id} />
+                </td>
               </tr>
             ))}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-ink/40">
+                <td colSpan={6} className="px-4 py-6 text-center text-ink/40">
                   Nog geen risico's toegevoegd.
                 </td>
               </tr>

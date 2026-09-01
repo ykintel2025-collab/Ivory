@@ -55,12 +55,20 @@ export default function AppShell({
         </Link>
 
         <div className="mb-6 px-2">
-          <Link
-            href="/projects"
-            className="text-xs font-medium text-ivory/50 hover:text-ivory/80"
-          >
-            ← Alle projecten
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/projects"
+              className="text-xs font-medium text-ivory/50 hover:text-ivory/80"
+            >
+              ← Alle projecten
+            </Link>
+            <Link
+              href="/contacts"
+              className="text-xs font-medium text-ivory/50 hover:text-ivory/80"
+            >
+              Relaties
+            </Link>
+          </div>
           <p className="mt-2 truncate font-display text-base text-ivory">
             {projectName ?? "Project"}
           </p>
