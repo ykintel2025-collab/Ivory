@@ -112,30 +112,41 @@ export default async function ProjectsPage() {
           <StatCard
             label="Mijn open taken"
             value={myTasks.length}
+            href="#mijn-taken"
           />
           <StatCard
             label="Open hoge risico's"
             value={(openHighRisks ?? []).length}
             tone={(openHighRisks ?? []).length > 0 ? "danger" : "success"}
+            href="#hoge-risicos"
           />
           <StatCard
             label="Geblokkeerd (wacht op extern)"
             value={(openBlockers ?? []).length}
             tone={(openBlockers ?? []).length > 0 ? "danger" : "success"}
+            href="#wachten-op-extern"
           />
-          <StatCard label="Openstaande taken" value={(openTasks ?? []).length} />
-          <StatCard label="Actieve projecten" value={projects.length} />
+          <StatCard
+            label="Openstaande taken"
+            value={(openTasks ?? []).length}
+            href="#mijn-taken"
+          />
+          <StatCard
+            label="Actieve projecten"
+            value={projects.length}
+            href="#projecten"
+          />
         </div>
 
         {/* Mijn taken */}
-        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+        <div id="mijn-taken" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
           <h2 className="mb-4 font-display text-lg text-ink">Mijn taken</h2>
           <MyTasksList tasks={myTasks} />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Openstaande hoge risico's, alle projecten */}
-          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <div id="hoge-risicos" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
             <h2 className="mb-4 font-display text-lg text-ink">
               Open hoge risico's
             </h2>
@@ -195,7 +206,7 @@ export default async function ProjectsPage() {
 
         {/* Wachten op extern, alle projecten */}
         {(openBlockers ?? []).length > 0 && (
-          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <div id="wachten-op-extern" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
             <h2 className="mb-4 font-display text-lg text-ink">
               Wachten op extern
             </h2>
@@ -220,7 +231,7 @@ export default async function ProjectsPage() {
         )}
 
         {/* Projecten */}
-        <div>
+        <div id="projecten" className="scroll-mt-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-lg text-ink">
               Jouw projecten

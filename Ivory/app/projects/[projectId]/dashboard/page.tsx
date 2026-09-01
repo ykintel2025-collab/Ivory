@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
 import RiskDonutChart from "@/components/RiskDonutChart";
+import AddProjectMemberForm from "@/components/AddProjectMemberForm";
+import DeleteButton from "@/components/DeleteButton";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -23,6 +25,8 @@ export default async function DashboardPage({
     { data: budget },
     { data: phases },
     { data: registrations },
+    { data: projectMembers },
+    { data: allProfiles },
   ] = await Promise.all([
     supabase
       .from("projects")
@@ -51,6 +55,11 @@ export default async function DashboardPage({
       .select("*")
       .eq("project_id", projectId)
       .order("expected_completion", { ascending: true, nullsFirst: false }),
+    supabase
+      .from("project_members")
+      .select("id, user_id, role, profiles(id, full_name)")
+      .eq("project_id", projectId),
+    supabase.from("profiles").select("id, full_name").order("full_name"),
   ]);
 
   const openRisks = (risks ?? []).filter((r) => r.status === "open");
@@ -89,6 +98,11 @@ export default async function DashboardPage({
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5);
 
+  const memberUserIds = new Set((projectMembers ?? []).map((m: any) => m.user_id));
+  const availableProfiles = (allProfiles ?? []).filter(
+    (p: any) => !memberUserIds.has(p.id)
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
@@ -106,6 +120,44 @@ export default async function DashboardPage({
           <p className="text-sm text-ink/50">
             {[project?.client, project?.location].filter(Boolean).join(" · ")}
           </p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg text-ink">Team</h2>
+            <p className="text-xs text-ink/40">
+              Alleen teamleden kunnen taken in dit project toegewezen krijgen
+            </p>
+          </div>
+          <AddProjectMemberForm
+            projectId={projectId}
+            availableProfiles={availableProfiles as any}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(projectMembers ?? []).map((m: any) => (
+            <div
+              key={m.id}
+              className="flex items-center gap-2 rounded-full border border-ivory-line py-1 pl-3 pr-1.5"
+            >
+              <span className="text-sm text-ink">
+                {m.profiles?.full_name}
+                {m.role && (
+                  <span className="ml-1 text-xs text-ink/40">· {m.role}</span>
+                )}
+              </span>
+              <DeleteButton
+                table="project_members"
+                id={m.id}
+                confirmText={`${m.profiles?.full_name} uit dit project verwijderen?`}
+              />
+            </div>
+          ))}
+          {(projectMembers ?? []).length === 0 && (
+            <p className="text-sm text-ink/40">Nog geen teamleden.</p>
+          )}
         </div>
       </div>
 
