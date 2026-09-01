@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
+import RiskDonutChart from "@/components/RiskDonutChart";
 import Link from "next/link";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,7 @@ export default async function DashboardPage({
   const projectId = params.projectId;
 
   const [
+    { data: project },
     { data: risks },
     { data: blockers },
     { data: tasks },
@@ -21,6 +24,11 @@ export default async function DashboardPage({
     { data: phases },
     { data: registrations },
   ] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("name, client, location")
+      .eq("id", projectId)
+      .single(),
     supabase.from("risks").select("*").eq("project_id", projectId),
     supabase
       .from("external_blockers")
@@ -45,9 +53,12 @@ export default async function DashboardPage({
       .order("expected_completion", { ascending: true, nullsFirst: false }),
   ]);
 
-  const openHighRisks = (risks ?? []).filter(
-    (r) => r.rating === "hoog" && r.status === "open"
-  ).length;
+  const openRisks = (risks ?? []).filter((r) => r.status === "open");
+  const riskCounts = {
+    hoog: openRisks.filter((r) => r.rating === "hoog").length,
+    midden: openRisks.filter((r) => r.rating === "midden").length,
+    laag: openRisks.filter((r) => r.rating === "laag").length,
+  };
 
   const blockedCount = blockers?.length ?? 0;
 
@@ -76,20 +87,33 @@ export default async function DashboardPage({
       })),
   ]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 3);
+    .slice(0, 5);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl text-ink">Dashboard</h1>
-        <p className="text-sm text-ink/50">Projectoverzicht</p>
+      <div className="flex items-center gap-3">
+        <Image
+          src="/logo-crest.png"
+          alt=""
+          width={40}
+          height={40}
+          className="h-10 w-10 shrink-0 rounded-full"
+        />
+        <div>
+          <h1 className="font-display text-2xl text-ink">
+            {project?.name ?? "Project"}
+          </h1>
+          <p className="text-sm text-ink/50">
+            {[project?.client, project?.location].filter(Boolean).join(" · ")}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="Open hoge risico's"
-          value={openHighRisks}
-          tone={openHighRisks > 0 ? "danger" : "success"}
+          value={riskCounts.hoog}
+          tone={riskCounts.hoog > 0 ? "danger" : "success"}
         />
         <StatCard
           label="Geblokkeerd (wacht op extern)"
@@ -97,20 +121,56 @@ export default async function DashboardPage({
           tone={blockedCount > 0 ? "danger" : "success"}
         />
         <StatCard
-          label="Budgetraming"
-          value={budgetPct ? `${budgetPct}%` : "—"}
-          sub={
-            budgetRow
-              ? `€${(budgetRow.estimate_low / 1e6).toFixed(1)}–${(
-                  budgetRow.estimate_high / 1e6
-                ).toFixed(1)}M van €${(budgetRow.allocation / 1e6).toFixed(1)}M`
-              : "Nog geen data"
-          }
-        />
-        <StatCard
           label="Openstaande taken"
           value={(tasks ?? []).filter((t) => t.status !== "klaar").length}
         />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-4 font-display text-lg text-ink">
+            Risico-verdeling
+          </h2>
+          <RiskDonutChart
+            hoog={riskCounts.hoog}
+            midden={riskCounts.midden}
+            laag={riskCounts.laag}
+          />
+        </div>
+
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-1 font-display text-lg text-ink">
+            Budget voor dit project
+          </h2>
+          {budgetRow ? (
+            <>
+              <p className="mb-4 text-xs text-ink/40">
+                Raming t.o.v. toegewezen budget
+              </p>
+              <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-ivory">
+                <div
+                  className={`h-3 rounded-full ${
+                    (budgetPct ?? 0) > 100 ? "bg-brick" : "bg-gold"
+                  }`}
+                  style={{ width: `${Math.min(budgetPct ?? 0, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-ink/70">
+                  €{(budgetRow.estimate_low / 1e6).toFixed(1)}–
+                  {(budgetRow.estimate_high / 1e6).toFixed(1)}M raming
+                </span>
+                <span className="font-medium text-ink">
+                  {budgetPct}% van €{(budgetRow.allocation / 1e6).toFixed(1)}M
+                </span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-ink/40">
+              Nog geen budgetraming vastgelegd voor dit project.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -129,7 +189,7 @@ export default async function DashboardPage({
                     {phase.done}/{phase.total || 0}
                   </span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-slate-100">
+                <div className="h-2 w-full rounded-full bg-ivory">
                   <div
                     className="h-2 rounded-full bg-gold"
                     style={{
@@ -184,13 +244,14 @@ export default async function DashboardPage({
           {(risks ?? [])
             .filter((r) => r.rating === "hoog" && r.status === "open")
             .map((r) => (
-              <div
+              <Link
                 key={r.id}
-                className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
+                href={`/projects/${projectId}/risks`}
+                className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
               >
                 <p className="text-sm text-ink/80">{r.title}</p>
                 <Badge value={r.status} />
-              </div>
+              </Link>
             ))}
           {(risks ?? []).filter((r) => r.rating === "hoog" && r.status === "open")
             .length === 0 && (

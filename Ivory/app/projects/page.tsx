@@ -243,7 +243,7 @@ export default async function ProjectsPage() {
                         ? "bg-teal-soft text-teal"
                         : p.status === "gepauzeerd"
                         ? "bg-amber-soft text-amber"
-                        : "bg-slate-100 text-ink/50"
+                        : "bg-ink/5 text-ink/50"
                     }`}
                   >
                     {p.status}

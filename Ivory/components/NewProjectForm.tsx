@@ -128,7 +128,7 @@ export default function NewProjectForm() {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-lg px-4 py-2 text-sm text-ink/50 hover:bg-slate-100"
+          className="rounded-lg px-4 py-2 text-sm text-ink/50 hover:bg-ivory"
         >
           Annuleren
         </button>
