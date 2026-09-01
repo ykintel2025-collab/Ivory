@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -37,12 +38,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen">
       {/* Ink brand panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-ink px-12 py-12 md:flex">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold font-display text-base font-semibold text-ink">
-            IV
-          </span>
-          <span className="font-display text-lg text-ivory">Ivory</span>
-        </div>
+        <Image
+          src="/logo-full.png"
+          alt="Ivory Global Care"
+          width={220}
+          height={76}
+          className="h-auto w-48"
+          priority
+        />
         <div>
           <p className="font-display text-4xl leading-tight text-ivory">
             Alle projecten,

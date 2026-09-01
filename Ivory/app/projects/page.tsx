@@ -3,6 +3,7 @@ import Link from "next/link";
 import NewProjectForm from "@/components/NewProjectForm";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
+import MyTasksList from "@/components/MyTasksList";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function ProjectsPage() {
     { data: openBlockers },
     { data: openTasks },
     { data: registrations },
+    { data: myTasksRaw },
   ] = await Promise.all([
     supabase
       .from("project_members")
@@ -45,6 +47,12 @@ export default async function ProjectsPage() {
       .neq("registration_status", "goedgekeurd")
       .not("expected_completion", "is", null)
       .order("expected_completion", { ascending: true }),
+    supabase
+      .from("tasks")
+      .select("id, title, due_date, urgency, project_id, projects(name)")
+      .eq("owner_id", user?.id ?? "")
+      .neq("status", "klaar")
+      .order("due_date", { ascending: true, nullsFirst: false }),
   ]);
 
   const projects = (memberships ?? [])
@@ -70,6 +78,15 @@ export default async function ProjectsPage() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5);
 
+  const myTasks = (myTasksRaw ?? []).map((t: any) => ({
+    id: t.id,
+    title: t.title,
+    due_date: t.due_date,
+    urgency: t.urgency,
+    project_id: t.project_id,
+    project_name: t.projects?.name ?? "",
+  }));
+
   return (
     <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
       <div className="mx-auto max-w-5xl space-y-10">
@@ -81,7 +98,11 @@ export default async function ProjectsPage() {
         </div>
 
         {/* Globaal overzicht */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <StatCard
+            label="Mijn open taken"
+            value={myTasks.length}
+          />
           <StatCard
             label="Open hoge risico's"
             value={(openHighRisks ?? []).length}
@@ -94,6 +115,12 @@ export default async function ProjectsPage() {
           />
           <StatCard label="Openstaande taken" value={(openTasks ?? []).length} />
           <StatCard label="Actieve projecten" value={projects.length} />
+        </div>
+
+        {/* Mijn taken */}
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-4 font-display text-lg text-ink">Mijn taken</h2>
+          <MyTasksList tasks={myTasks} />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

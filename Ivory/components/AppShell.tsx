@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
@@ -43,9 +44,13 @@ export default function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 bg-ink px-4 py-6 md:flex md:flex-col">
         <Link href="/projects" className="mb-8 flex items-center gap-2 px-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold font-display text-sm font-semibold text-ink">
-            IV
-          </span>
+          <Image
+            src="/logo-crest.png"
+            alt="Ivory Global Care"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-full object-cover"
+          />
           <span className="font-display text-base text-ivory">Ivory</span>
         </Link>
 
