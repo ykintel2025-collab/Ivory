@@ -63,7 +63,7 @@ export default function NewProjectForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft"
       >
         + Nieuw project
       </button>
@@ -73,40 +73,40 @@ export default function NewProjectForm() {
   return (
     <form
       onSubmit={handleCreate}
-      className="w-full max-w-md space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="w-full max-w-md space-y-3 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm"
     >
-      <h2 className="text-sm font-semibold text-slate-900">Nieuw project</h2>
+      <h2 className="font-display text-lg text-ink">Nieuw project</h2>
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">
+        <label className="mb-1 block text-xs font-medium text-ink/70">
           Projectnaam
         </label>
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
           placeholder="bijv. Shajar Hospital"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">
+        <label className="mb-1 block text-xs font-medium text-ink/70">
           Opdrachtgever
         </label>
         <input
           value={client}
           onChange={(e) => setClient(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
           placeholder="bijv. QHC Architects & Engineers"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">
+        <label className="mb-1 block text-xs font-medium text-ink/70">
           Locatie
         </label>
         <input
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
           placeholder="bijv. Dibba Al Husn, VAE"
         />
       </div>
@@ -121,14 +121,14 @@ export default function NewProjectForm() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft disabled:opacity-60"
         >
           {loading ? "Bezig..." : "Aanmaken"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-lg px-4 py-2 text-sm text-slate-500 hover:bg-slate-100"
+          className="rounded-lg px-4 py-2 text-sm text-ink/50 hover:bg-slate-100"
         >
           Annuleren
         </button>

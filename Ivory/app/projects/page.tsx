@@ -71,11 +71,11 @@ export default async function ProjectsPage() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto max-w-5xl space-y-8">
+    <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
+      <div className="mx-auto max-w-5xl space-y-10">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="font-display text-3xl text-ink">Dashboard</h1>
+          <p className="text-sm text-ink/50">
             Overzicht over al je projecten heen
           </p>
         </div>
@@ -98,25 +98,25 @@ export default async function ProjectsPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Openstaande hoge risico's, alle projecten */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-slate-900">
+          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+            <h2 className="mb-4 font-display text-lg text-ink">
               Open hoge risico's
             </h2>
             <div className="space-y-2">
               {(openHighRisks ?? []).slice(0, 6).map((r: any) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
                 >
                   <div>
-                    <p className="text-sm text-slate-700">{r.title}</p>
-                    <p className="text-xs text-slate-400">{r.projects?.name}</p>
+                    <p className="text-sm text-ink/80">{r.title}</p>
+                    <p className="text-xs text-ink/40">{r.projects?.name}</p>
                   </div>
                   <Badge value="hoog" />
                 </div>
               ))}
               {(openHighRisks ?? []).length === 0 && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-ink/40">
                   Geen open hoge risico's. 👍
                 </p>
               )}
@@ -124,23 +124,23 @@ export default async function ProjectsPage() {
           </div>
 
           {/* Eerstvolgende deadlines, alle projecten */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-slate-900">
+          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+            <h2 className="mb-4 font-display text-lg text-ink">
               Eerstvolgende deadlines
             </h2>
             {upcomingDeadlines.length === 0 ? (
-              <p className="text-sm text-slate-400">Geen deadlines gevonden.</p>
+              <p className="text-sm text-ink/40">Geen deadlines gevonden.</p>
             ) : (
               <ul className="space-y-3">
                 {upcomingDeadlines.map((d, i) => (
                   <li key={i} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium text-slate-800">{d.label}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="font-medium text-ink">{d.label}</p>
+                      <p className="text-xs text-ink/40">
                         {d.type} · {d.project}
                       </p>
                     </div>
-                    <span className="text-xs font-medium text-slate-500">
+                    <span className="text-xs font-medium text-ink/50">
                       {new Date(d.date).toLocaleDateString("nl-NL")}
                     </span>
                   </li>
@@ -152,19 +152,19 @@ export default async function ProjectsPage() {
 
         {/* Wachten op extern, alle projecten */}
         {(openBlockers ?? []).length > 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-slate-900">
+          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+            <h2 className="mb-4 font-display text-lg text-ink">
               Wachten op extern
             </h2>
             <div className="space-y-2">
               {(openBlockers ?? []).map((b: any) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
                 >
                   <div>
-                    <p className="text-sm text-slate-700">{b.title}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-sm text-ink/80">{b.title}</p>
+                    <p className="text-xs text-ink/40">
                       {b.projects?.name} · wacht op {b.parties?.name ?? "onbekend"}
                     </p>
                   </div>
@@ -178,7 +178,7 @@ export default async function ProjectsPage() {
         {/* Projecten */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-900">
+            <h2 className="font-display text-lg text-ink">
               Jouw projecten
             </h2>
             <NewProjectForm />
@@ -189,30 +189,30 @@ export default async function ProjectsPage() {
               <Link
                 key={p.id}
                 href={`/projects/${p.id}/dashboard`}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400"
+                className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm transition hover:border-gold"
               >
                 <div className="mb-1 flex items-center justify-between">
-                  <p className="text-sm font-semibold text-slate-900">{p.name}</p>
+                  <p className="font-display text-lg text-ink">{p.name}</p>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       p.status === "actief"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-teal-soft text-teal"
                         : p.status === "gepauzeerd"
-                        ? "bg-orange-100 text-orange-700"
-                        : "bg-slate-100 text-slate-500"
+                        ? "bg-amber-soft text-amber"
+                        : "bg-slate-100 text-ink/50"
                     }`}
                   >
                     {p.status}
                   </span>
                 </div>
-                {p.client && <p className="text-xs text-slate-500">{p.client}</p>}
+                {p.client && <p className="text-xs text-ink/50">{p.client}</p>}
                 {p.location && (
-                  <p className="text-xs text-slate-400">{p.location}</p>
+                  <p className="text-xs text-ink/40">{p.location}</p>
                 )}
               </Link>
             ))}
             {projects.length === 0 && (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-ink/40">
                 Nog geen projecten. Maak je eerste project aan.
               </p>
             )}

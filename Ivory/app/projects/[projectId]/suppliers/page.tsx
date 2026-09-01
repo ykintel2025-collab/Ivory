@@ -17,15 +17,15 @@ export default async function SuppliersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="font-display text-2xl text-ink">
           Apparatuur en leveranciers
         </h1>
-        <p className="text-sm text-slate-500">Kernitems per afdeling</p>
+        <p className="text-sm text-ink/50">Kernitems per afdeling</p>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-ivory-line bg-ivory-card shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-ivory-line bg-ivory text-xs uppercase tracking-wide text-ink/50">
             <tr>
               <th className="px-4 py-3">Code</th>
               <th className="px-4 py-3">Omschrijving</th>
@@ -38,24 +38,24 @@ export default async function SuppliersPage({
           </thead>
           <tbody>
             {(items ?? []).map((item) => (
-              <tr key={item.id} className="border-b border-slate-50">
-                <td className="px-4 py-3 text-xs text-slate-400">
+              <tr key={item.id} className="border-b border-ivory-line">
+                <td className="px-4 py-3 text-xs text-ink/40">
                   {item.line_code ?? "—"}
                 </td>
-                <td className="px-4 py-3 font-medium text-slate-800">
+                <td className="px-4 py-3 font-medium text-ink">
                   {item.description}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-ink/70">
                   {item.department ?? "—"}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-ink/70">
                   {item.supplier ?? "—"}
                 </td>
-                <td className="px-4 py-3 text-slate-600">{item.model ?? "—"}</td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-ink/70">{item.model ?? "—"}</td>
+                <td className="px-4 py-3 text-ink/70">
                   {item.certification_status ?? "—"}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-ink/70">
                   {item.price_estimate
                     ? `${item.currency ?? "EUR"} ${item.price_estimate.toLocaleString(
                         "nl-NL"
@@ -66,7 +66,7 @@ export default async function SuppliersPage({
             ))}
             {(items ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-ink/40">
                   Nog geen apparatuur toegevoegd.
                 </td>
               </tr>

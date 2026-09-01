@@ -25,15 +25,15 @@ export default async function RisksPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Risicoregister</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="font-display text-2xl text-ink">Risicoregister</h1>
+        <p className="text-sm text-ink/50">
           Alle geïdentificeerde risico's, beoordeling en mitigatie
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-ivory-line bg-ivory-card shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-ivory-line bg-ivory text-xs uppercase tracking-wide text-ink/50">
             <tr>
               <th className="px-4 py-3">Risico</th>
               <th className="px-4 py-3">Score</th>
@@ -44,11 +44,11 @@ export default async function RisksPage({
           </thead>
           <tbody>
             {sorted.map((r) => (
-              <tr key={r.id} className="border-b border-slate-50 align-top">
-                <td className="px-4 py-3 font-medium text-slate-800">
+              <tr key={r.id} className="border-b border-ivory-line align-top">
+                <td className="px-4 py-3 font-medium text-ink">
                   {r.title}
                   {r.description && (
-                    <p className="mt-1 text-xs font-normal text-slate-400">
+                    <p className="mt-1 text-xs font-normal text-ink/40">
                       {r.description}
                     </p>
                   )}
@@ -59,15 +59,15 @@ export default async function RisksPage({
                 <td className="px-4 py-3">
                   <Badge value={r.status} />
                 </td>
-                <td className="px-4 py-3 text-slate-600">{r.mitigation ?? "—"}</td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-ink/70">{r.mitigation ?? "—"}</td>
+                <td className="px-4 py-3 text-ink/50">
                   {r.profiles?.full_name ?? "—"}
                 </td>
               </tr>
             ))}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink/40">
                   Nog geen risico's toegevoegd.
                 </td>
               </tr>

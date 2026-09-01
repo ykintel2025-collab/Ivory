@@ -18,8 +18,8 @@ export default async function TasksPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Taken</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="font-display text-2xl text-ink">Taken</h1>
+        <p className="text-sm text-ink/50">
           Kanban-bord — gebruik de knoppen om taken te verplaatsen
         </p>
       </div>

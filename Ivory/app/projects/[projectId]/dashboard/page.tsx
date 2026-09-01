@@ -81,8 +81,8 @@ export default async function DashboardPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">Projectoverzicht</p>
+        <h1 className="font-display text-2xl text-ink">Dashboard</h1>
+        <p className="text-sm text-ink/50">Projectoverzicht</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -114,24 +114,24 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-slate-900">
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-4 font-display text-lg text-ink">
             Voortgang per fase
           </h2>
           <div className="space-y-3">
             {phaseProgress.map((phase) => (
               <div key={phase.id}>
                 <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700">
+                  <span className="font-medium text-ink/80">
                     Fase {phase.number} — {phase.name}
                   </span>
-                  <span className="text-slate-400">
+                  <span className="text-ink/40">
                     {phase.done}/{phase.total || 0}
                   </span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-slate-900"
+                    className="h-2 rounded-full bg-gold"
                     style={{
                       width: phase.total
                         ? `${(phase.done / phase.total) * 100}%`
@@ -144,21 +144,21 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-slate-900">
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-4 font-display text-lg text-ink">
             Eerstvolgende deadlines
           </h2>
           {upcomingDeadlines.length === 0 ? (
-            <p className="text-sm text-slate-400">Geen deadlines gevonden.</p>
+            <p className="text-sm text-ink/40">Geen deadlines gevonden.</p>
           ) : (
             <ul className="space-y-3">
               {upcomingDeadlines.map((d, i) => (
                 <li key={i} className="flex items-center justify-between text-sm">
                   <div>
-                    <p className="font-medium text-slate-800">{d.label}</p>
-                    <p className="text-xs text-slate-400">{d.type}</p>
+                    <p className="font-medium text-ink">{d.label}</p>
+                    <p className="text-xs text-ink/40">{d.type}</p>
                   </div>
-                  <span className="text-xs font-medium text-slate-500">
+                  <span className="text-xs font-medium text-ink/50">
                     {new Date(d.date).toLocaleDateString("nl-NL")}
                   </span>
                 </li>
@@ -168,14 +168,14 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">
+          <h2 className="font-display text-lg text-ink">
             Openstaande hoge risico's
           </h2>
           <Link
             href={`/projects/${projectId}/risks`}
-            className="text-xs font-medium text-slate-500 hover:underline"
+            className="text-xs font-medium text-ink/50 hover:underline"
           >
             Alle risico's →
           </Link>
@@ -186,15 +186,15 @@ export default async function DashboardPage({
             .map((r) => (
               <div
                 key={r.id}
-                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2"
               >
-                <p className="text-sm text-slate-700">{r.title}</p>
+                <p className="text-sm text-ink/80">{r.title}</p>
                 <Badge value={r.status} />
               </div>
             ))}
           {(risks ?? []).filter((r) => r.rating === "hoog" && r.status === "open")
             .length === 0 && (
-            <p className="text-sm text-slate-400">Geen open hoge risico's.</p>
+            <p className="text-sm text-ink/40">Geen open hoge risico's.</p>
           )}
         </div>
       </div>

@@ -41,27 +41,27 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
         return (
           <div key={col.key} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">{col.label}</h2>
-              <span className="text-xs text-slate-400">{colTasks.length}</span>
+              <h2 className="font-display text-lg text-ink">{col.label}</h2>
+              <span className="text-xs text-ink/40">{colTasks.length}</span>
             </div>
             <div className="space-y-3">
               {colTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="rounded-xl border border-slate-100 p-3 shadow-sm"
+                  className="rounded-lg border border-ivory-line p-3 shadow-sm"
                 >
                   <div className="mb-1 flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-slate-800">
+                    <p className="text-sm font-medium text-ink">
                       {task.title}
                     </p>
                     {task.urgency === "urgent" && <Badge value="urgent" />}
                   </div>
                   {task.description && (
-                    <p className="mb-2 text-xs text-slate-500">
+                    <p className="mb-2 text-xs text-ink/50">
                       {task.description}
                     </p>
                   )}
-                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-ink/40">
                     {task.phases && (
                       <span>Fase {task.phases.number}</span>
                     )}
@@ -80,7 +80,7 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                         key={c.key}
                         disabled={updating === task.id}
                         onClick={() => moveTask(task.id, c.key)}
-                        className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+                        className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-ink/70 hover:bg-slate-200 disabled:opacity-50"
                       >
                         → {c.label}
                       </button>
@@ -89,7 +89,7 @@ export default function KanbanBoard({ tasks }: { tasks: Task[] }) {
                 </div>
               ))}
               {colTasks.length === 0 && (
-                <p className="text-xs text-slate-300">Geen taken</p>
+                <p className="text-xs text-ink/30">Geen taken</p>
               )}
             </div>
           </div>
