@@ -9,20 +9,25 @@ export default function StatCard({
   sub?: string;
   tone?: "default" | "danger" | "success";
 }) {
-  const toneClass =
+  const accentClass =
     tone === "danger"
-      ? "text-red-600"
+      ? "border-l-brick"
       : tone === "success"
-      ? "text-green-600"
-      : "text-slate-900";
+      ? "border-l-teal"
+      : "border-l-ink/20";
+
+  const valueClass =
+    tone === "danger" ? "text-brick" : tone === "success" ? "text-teal" : "text-ink";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div
+      className={`rounded-xl border border-ivory-line border-l-4 bg-ivory-card p-5 shadow-sm ${accentClass}`}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-ink/50">
         {label}
       </p>
-      <p className={`mt-2 text-2xl font-semibold ${toneClass}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
+      <p className={`mt-2 font-display text-3xl ${valueClass}`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-ink/40">{sub}</p>}
     </div>
   );
 }

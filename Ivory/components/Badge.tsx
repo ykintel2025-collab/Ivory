@@ -1,15 +1,15 @@
 const STYLES: Record<string, string> = {
-  hoog: "bg-red-100 text-red-700",
-  midden: "bg-orange-100 text-orange-700",
-  laag: "bg-green-100 text-green-700",
-  open: "bg-red-100 text-red-700",
-  opgelost: "bg-green-100 text-green-700",
-  te_doen: "bg-slate-100 text-slate-700",
-  mee_bezig: "bg-orange-100 text-orange-700",
-  klaar: "bg-green-100 text-green-700",
-  urgent: "bg-red-100 text-red-700",
-  in_scope: "bg-green-100 text-green-700",
-  buiten_scope: "bg-slate-100 text-slate-500",
+  hoog: "bg-brick-soft text-brick",
+  midden: "bg-amber-soft text-amber",
+  laag: "bg-teal-soft text-teal",
+  open: "bg-brick-soft text-brick",
+  opgelost: "bg-teal-soft text-teal",
+  te_doen: "bg-ink/5 text-ink/70",
+  mee_bezig: "bg-amber-soft text-amber",
+  klaar: "bg-teal-soft text-teal",
+  urgent: "bg-brick-soft text-brick",
+  in_scope: "bg-teal-soft text-teal",
+  buiten_scope: "bg-ink/5 text-ink/40",
 };
 
 const LABELS: Record<string, string> = {
@@ -24,7 +24,7 @@ const LABELS: Record<string, string> = {
 };
 
 export default function Badge({ value }: { value: string }) {
-  const style = STYLES[value] ?? "bg-slate-100 text-slate-700";
+  const style = STYLES[value] ?? "bg-ink/5 text-ink/70";
   const label = LABELS[value] ?? value.replace(/_/g, " ");
   return (
     <span

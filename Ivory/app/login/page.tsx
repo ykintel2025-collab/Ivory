@@ -34,54 +34,77 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-1 text-xl font-semibold text-slate-900">
-          Shajar Hospital Project
-        </h1>
-        <p className="mb-6 text-sm text-slate-500">Log in om verder te gaan</p>
+    <div className="flex min-h-screen">
+      {/* Ink brand panel */}
+      <div className="hidden w-1/2 flex-col justify-between bg-ink px-12 py-12 md:flex">
+        <div className="flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold font-display text-base font-semibold text-ink">
+            IV
+          </span>
+          <span className="font-display text-lg text-ivory">Ivory</span>
+        </div>
+        <div>
+          <p className="font-display text-4xl leading-tight text-ivory">
+            Alle projecten,
+            <br />
+            <span className="italic text-gold">één overzicht.</span>
+          </p>
+          <p className="mt-4 max-w-sm text-sm text-ivory/50">
+            Risico's, taken, scope en partijen — voor elk project op één
+            plek, altijd actueel.
+          </p>
+        </div>
+        <p className="text-xs text-ivory/30">Ivory Global Care BV</p>
+      </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              E-mail
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="naam@shajar-project.local"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Wachtwoord
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
+      {/* Login form */}
+      <div className="flex w-full items-center justify-center bg-ivory px-6 md:w-1/2">
+        <div className="w-full max-w-sm">
+          <h1 className="mb-1 font-display text-2xl text-ink">Welkom terug</h1>
+          <p className="mb-8 text-sm text-ink/50">Log in om verder te gaan</p>
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-              {error}
-            </p>
-          )}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink/70">
+                E-mail
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+                placeholder="naam@ivory-project.local"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink/70">
+                Wachtwoord
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
-          >
-            {loading ? "Bezig..." : "Inloggen"}
-          </button>
-        </form>
+            {error && (
+              <p className="rounded-lg bg-brick-soft px-3 py-2 text-sm text-brick">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-ink px-3 py-2.5 text-sm font-medium text-ivory transition hover:bg-ink-soft disabled:opacity-60"
+            >
+              {loading ? "Bezig..." : "Inloggen"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

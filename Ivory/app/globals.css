@@ -7,6 +7,11 @@ html, body {
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #FAF7F0;
+  color: #1D4153;
+  font-family: var(--font-body), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), serif;
 }
