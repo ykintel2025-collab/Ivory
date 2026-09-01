@@ -29,7 +29,8 @@ export default function MyTasksList({ tasks }: { tasks: MyTask[] }) {
   if (tasks.length === 0) {
     return (
       <p className="text-sm text-ink/40">
-        Geen taken aan jou toegewezen. 👍
+        Nog geen taken aan jou toegewezen. Wijs jezelf toe bij het aanmaken
+        of bewerken van een taak.
       </p>
     );
   }

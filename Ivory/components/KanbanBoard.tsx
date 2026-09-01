@@ -34,10 +34,12 @@ export default function KanbanBoard({
   tasks,
   members = [],
   phases = [],
+  projectId,
 }: {
   tasks: Task[];
   members?: Member[];
   phases?: Phase[];
+  projectId: string;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -79,6 +81,19 @@ export default function KanbanBoard({
                         table="tasks"
                         id={task.id}
                         title="Taak bewerken"
+                        beforeSave={async (values) => {
+                          if (values.owner_id) {
+                            await supabase.from("project_members").upsert(
+                              {
+                                project_id: projectId,
+                                user_id: values.owner_id,
+                                role: "lid",
+                                visible: true,
+                              },
+                              { onConflict: "project_id,user_id", ignoreDuplicates: true }
+                            );
+                          }
+                        }}
                         initialValues={{
                           title: task.title,
                           description: task.description,

@@ -12,26 +12,40 @@ export default async function TasksPage({
   const supabase = createClient();
   const projectId = params.projectId;
 
-  const [{ data: tasks }, { data: members }, { data: phases }] =
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [{ data: tasks }, { data: allProfiles }, { data: viewerProfile }, { data: phases }] =
     await Promise.all([
       supabase
         .from("tasks")
-        .select("*, phases(number, name), profiles(full_name)")
+        .select("*, phases(number, name), profiles(id, full_name, hidden)")
         .eq("project_id", projectId)
         .order("due_date", { ascending: true, nullsFirst: false }),
+      supabase.from("profiles").select("id, full_name, hidden").order("full_name"),
       supabase
-        .from("project_members")
-        .select("user_id, profiles(full_name)")
-        .eq("project_id", projectId),
+        .from("profiles")
+        .select("can_see_hidden")
+        .eq("id", user?.id ?? "")
+        .single(),
       supabase.from("phases").select("*").order("number"),
     ]);
 
-  const memberList = (members ?? [])
-    .map((m: any) => ({
-      user_id: m.user_id,
-      full_name: m.profiles?.full_name ?? "Onbekend",
-    }))
-    .filter((m) => m.full_name !== "Onbekend" || m.user_id);
+  const canSeeHidden = viewerProfile?.can_see_hidden ?? false;
+
+  // Lijst met mensen die je mag toewijzen: iedereen, tenzij verborgen en jij mag dat niet zien
+  const assignableProfiles = (allProfiles ?? [])
+    .filter((p: any) => !p.hidden || canSeeHidden)
+    .map((p: any) => ({ user_id: p.id, full_name: p.full_name }));
+
+  // Namen maskeren op taken waarvan de eigenaar verborgen is en jij geen rechten hebt
+  const maskedTasks = (tasks ?? []).map((t: any) => {
+    if (t.profiles?.hidden && !canSeeHidden) {
+      return { ...t, profiles: { full_name: "Intern toegewezen" } };
+    }
+    return t;
+  });
 
   return (
     <div className="space-y-6">
@@ -45,13 +59,14 @@ export default async function TasksPage({
       </div>
       <NewTaskForm
         projectId={projectId}
-        members={memberList}
+        members={assignableProfiles}
         phases={phases ?? []}
       />
       <KanbanBoard
-        tasks={(tasks as any) ?? []}
-        members={memberList}
+        tasks={maskedTasks as any}
+        members={assignableProfiles}
         phases={phases ?? []}
+        projectId={projectId}
       />
     </div>
   );

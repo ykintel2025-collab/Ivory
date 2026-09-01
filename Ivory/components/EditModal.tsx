@@ -18,12 +18,14 @@ export default function EditModal({
   title,
   fields,
   initialValues,
+  beforeSave,
 }: {
   table: string;
   id: string;
   title: string;
   fields: Field[];
   initialValues: Record<string, any>;
+  beforeSave?: (values: Record<string, any>) => Promise<void>;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -45,6 +47,10 @@ export default function EditModal({
       if (f.type === "boolean" && v !== null) v = v === "true";
       if (f.numeric && v !== null) v = Number(v);
       payload[f.key] = v;
+    }
+
+    if (beforeSave) {
+      await beforeSave(values);
     }
 
     const { error: updateError } = await supabase
