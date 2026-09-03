@@ -40,6 +40,7 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
           <span className="font-display text-base text-ivory">Ivory Basecamp</span>
         </div>
         <nav className="flex-1 space-y-1">
+          <NewProjectForm variant="nav" />
           {NAV.map((item) => {
             const active = pathname === item.href;
             return (
@@ -58,10 +59,9 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
-        <NewProjectForm variant="sidebar" />
         <button
           onClick={handleLogout}
-          className="mt-2 rounded-lg px-3 py-2 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"
+          className="mt-4 rounded-lg px-3 py-2 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"
         >
           Uitloggen
         </button>
@@ -90,6 +90,7 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
       {mobileOpen && (
         <div className="fixed inset-0 top-14 z-10 bg-ink p-4 md:hidden">
           <nav className="space-y-1">
+            <NewProjectForm variant="nav" />
             {NAV.map((item) => {
               const active = pathname === item.href;
               return (
@@ -108,9 +109,6 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
                 </Link>
               );
             })}
-            <div className="pt-2">
-              <NewProjectForm variant="sidebar" />
-            </div>
             <button
               onClick={handleLogout}
               className="mt-2 w-full rounded-lg px-3 py-3 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"

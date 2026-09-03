@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
-import RiskDonutChart from "@/components/RiskDonutChart";
 import DeleteButton from "@/components/DeleteButton";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 import ManagePhasesForm from "@/components/ManagePhasesForm";
@@ -233,14 +232,53 @@ export default async function DashboardPage({
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-          <h2 className="mb-4 font-display text-lg text-ink">
-            Risico-verdeling
-          </h2>
-          <RiskDonutChart
-            hoog={riskCounts.hoog}
-            midden={riskCounts.midden}
-            laag={riskCounts.laag}
-          />
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg text-ink">
+              Prioriteiten en taken
+            </h2>
+            <Link
+              href={`/projects/${projectId}/tasks`}
+              className="text-xs font-medium text-ink/50 hover:underline"
+            >
+              Alle taken →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {(tasks ?? [])
+              .filter((t) => t.status !== "klaar")
+              .sort((a, b) => {
+                const urgencyOrder: Record<string, number> = { urgent: 0, hoog: 1, normaal: 2 };
+                const ua = urgencyOrder[a.urgency ?? "normaal"] ?? 2;
+                const ub = urgencyOrder[b.urgency ?? "normaal"] ?? 2;
+                if (ua !== ub) return ua - ub;
+                if (!a.due_date) return 1;
+                if (!b.due_date) return -1;
+                return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+              })
+              .slice(0, 6)
+              .map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/projects/${projectId}/tasks`}
+                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm text-ink/80">{t.title}</p>
+                    {t.due_date && (
+                      <p className="text-xs text-ink/40">
+                        {new Date(t.due_date).toLocaleDateString("nl-NL")}
+                      </p>
+                    )}
+                  </div>
+                  {t.urgency && t.urgency !== "normaal" && (
+                    <Badge value={t.urgency === "urgent" ? "urgent" : "hoog"} />
+                  )}
+                </Link>
+              ))}
+            {(tasks ?? []).filter((t) => t.status !== "klaar").length === 0 && (
+              <p className="text-sm text-ink/40">Geen openstaande taken. 👍</p>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 export default function NewProjectForm({
   variant = "button",
 }: {
-  variant?: "button" | "sidebar";
+  variant?: "button" | "sidebar" | "nav";
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -63,12 +63,21 @@ export default function NewProjectForm({
   const triggerClass =
     variant === "sidebar"
       ? "flex items-center gap-2 rounded-lg border border-gold/40 px-3 py-2 text-left text-sm font-medium text-gold hover:bg-ink-soft"
+      : variant === "nav"
+      ? "flex w-full items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-left text-sm font-medium text-gold hover:bg-ink-soft"
       : "rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft";
 
   return (
     <>
       <button onClick={() => setOpen(true)} className={triggerClass}>
-        {variant === "sidebar" ? "+ Nieuw project" : "+ Nieuw project"}
+        {variant === "nav" ? (
+          <>
+            <span className="w-4 text-center text-xs">+</span>
+            Nieuw project
+          </>
+        ) : (
+          "+ Nieuw project"
+        )}
       </button>
 
       {open && (

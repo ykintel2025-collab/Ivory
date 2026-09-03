@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import NewProjectForm from "@/components/NewProjectForm";
 import StatCard from "@/components/StatCard";
 import MyTasksList from "@/components/MyTasksList";
 import GlobalShell from "@/components/GlobalShell";
@@ -236,7 +235,6 @@ export default async function ProjectsPage() {
         <div id="projecten" className="scroll-mt-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-lg text-ink">Jouw projecten</h2>
-            <NewProjectForm />
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
