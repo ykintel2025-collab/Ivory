@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import GlobalShell from "@/components/GlobalShell";
 import DocumentRow from "@/components/DocumentRow";
+import UploadDocumentForm from "@/components/UploadDocumentForm";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -8,10 +9,24 @@ export const dynamic = "force-dynamic";
 export default async function GlobalDocumentsPage() {
   const supabase = createClient();
 
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("*, projects(id, name), profiles(full_name)")
-    .order("created_at", { ascending: false });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [{ data: documents }, { data: memberships }] = await Promise.all([
+    supabase
+      .from("documents")
+      .select("*, projects(id, name), profiles(full_name)")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("project_members")
+      .select("projects(id, name)")
+      .eq("user_id", user?.id ?? ""),
+  ]);
+
+  const projects = (memberships ?? [])
+    .map((m: any) => m.projects)
+    .filter(Boolean);
 
   const docsWithUrls = await Promise.all(
     (documents ?? []).map(async (d: any) => {
@@ -22,9 +37,10 @@ export default async function GlobalDocumentsPage() {
     })
   );
 
-  // Groepeer per project
+  const unassigned = docsWithUrls.filter((d) => !d.project_id);
   const byProject = new Map<string, { name: string; docs: typeof docsWithUrls }>();
   for (const doc of docsWithUrls) {
+    if (!doc.project_id) continue;
     const key = doc.project_id;
     if (!byProject.has(key)) {
       byProject.set(key, { name: doc.projects?.name ?? "Onbekend project", docs: [] });
@@ -35,17 +51,33 @@ export default async function GlobalDocumentsPage() {
   return (
     <GlobalShell>
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-ink">Documenten</h1>
-          <p className="text-sm text-ink/50">
-            Alle documenten, over al je projecten heen
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl text-ink">Documenten</h1>
+            <p className="text-sm text-ink/50">
+              Alle documenten, over al je projecten heen — of nog niet toegewezen
+            </p>
+          </div>
         </div>
 
-        {byProject.size === 0 && (
+        <UploadDocumentForm projects={projects} />
+
+        {unassigned.length > 0 && (
+          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+            <h2 className="mb-4 font-display text-lg text-ink">
+              Nog niet toegewezen
+            </h2>
+            <div className="space-y-2">
+              {unassigned.map((doc: any) => (
+                <DocumentRow key={doc.id} doc={doc} projects={projects} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {byProject.size === 0 && unassigned.length === 0 && (
           <p className="text-sm text-ink/40">
-            Nog geen documenten geüpload. Ga naar een project → Documenten om
-            te beginnen.
+            Nog geen documenten geüpload.
           </p>
         )}
 

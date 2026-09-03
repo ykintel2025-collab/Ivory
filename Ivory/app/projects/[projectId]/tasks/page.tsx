@@ -29,7 +29,7 @@ export default async function TasksPage({
         .select("can_see_hidden")
         .eq("id", user?.id ?? "")
         .single(),
-      supabase.from("phases").select("*").order("number"),
+      supabase.from("phases").select("*").eq("project_id", projectId).order("number"),
     ]);
 
   const canSeeHidden = viewerProfile?.can_see_hidden ?? false;

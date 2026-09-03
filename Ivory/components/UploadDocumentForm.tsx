@@ -14,14 +14,25 @@ const SECTIONS = [
   { value: "parties", label: "Partijen" },
 ];
 
-export default function UploadDocumentForm({ projectId }: { projectId: string }) {
+type Project = { id: string; name: string };
+
+export default function UploadDocumentForm({
+  projectId,
+  projects,
+}: {
+  projectId?: string;
+  projects?: Project[];
+}) {
   const supabase = createClient();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [section, setSection] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(projectId ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const showProjectPicker = !projectId && projects && projects.length > 0;
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +45,8 @@ export default function UploadDocumentForm({ projectId }: { projectId: string })
     } = await supabase.auth.getUser();
 
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const path = `${projectId}/${Date.now()}-${safeName}`;
+    const folder = selectedProjectId || "unassigned";
+    const path = `${folder}/${Date.now()}-${safeName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("documents")
@@ -47,10 +59,10 @@ export default function UploadDocumentForm({ projectId }: { projectId: string })
     }
 
     const { error: insertError } = await supabase.from("documents").insert({
-      project_id: projectId,
+      project_id: selectedProjectId || null,
       name: file.name,
       storage_path: path,
-      section: section || null,
+      section: selectedProjectId ? section || null : null,
       size: file.size,
       uploaded_by: user?.id ?? null,
     });
@@ -63,6 +75,7 @@ export default function UploadDocumentForm({ projectId }: { projectId: string })
 
     setFile(null);
     setSection("");
+    setSelectedProjectId(projectId ?? "");
     setOpen(false);
     router.refresh();
   }
@@ -97,22 +110,44 @@ export default function UploadDocumentForm({ projectId }: { projectId: string })
         />
       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-medium text-ink/60">
-          Koppelen aan onderdeel (optioneel)
-        </label>
-        <select
-          value={section}
-          onChange={(e) => setSection(e.target.value)}
-          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
-        >
-          {SECTIONS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {showProjectPicker && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-ink/60">
+            Project (optioneel — later ook toe te wijzen)
+          </label>
+          <select
+            value={selectedProjectId}
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+            className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+          >
+            <option value="">Nog niet toewijzen</option>
+            {projects!.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {selectedProjectId && (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-ink/60">
+            Koppelen aan onderdeel (optioneel)
+          </label>
+          <select
+            value={section}
+            onChange={(e) => setSection(e.target.value)}
+            className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+          >
+            {SECTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {error && (
         <p className="rounded-lg bg-brick-soft px-3 py-2 text-xs text-brick">

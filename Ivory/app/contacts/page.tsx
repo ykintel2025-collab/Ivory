@@ -3,6 +3,7 @@ import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
 import EditModal from "@/components/EditModal";
 import GlobalShell from "@/components/GlobalShell";
+import AddGlobalContactForm from "@/components/AddGlobalContactForm";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,8 @@ export default async function ContactsPage() {
             Partijen-pagina van dat project.
           </p>
         </div>
+
+        <AddGlobalContactForm />
 
         <div className="space-y-3">
           {(contacts ?? []).map((c: any) => (

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import DeleteButton from "@/components/DeleteButton";
+import AssignDocumentForm from "@/components/AssignDocumentForm";
 
 function formatSize(bytes: number | null) {
   if (!bytes) return "";
@@ -9,11 +10,17 @@ function formatSize(bytes: number | null) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function DocumentRow({ doc }: { doc: any }) {
+export default function DocumentRow({
+  doc,
+  projects,
+}: {
+  doc: any;
+  projects?: { id: string; name: string }[];
+}) {
   const supabase = createClient();
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2.5">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ivory-line px-3 py-2.5">
       <div className="min-w-0">
         {doc.url ? (
           <a
@@ -33,14 +40,23 @@ export default function DocumentRow({ doc }: { doc: any }) {
           {doc.size ? ` · ${formatSize(doc.size)}` : ""}
         </p>
       </div>
-      <DeleteButton
-        table="documents"
-        id={doc.id}
-        confirmText={`${doc.name} verwijderen? Dit kan niet ongedaan worden gemaakt.`}
-        beforeDelete={async () => {
-          await supabase.storage.from("documents").remove([doc.storage_path]);
-        }}
-      />
+      <div className="flex items-center gap-2">
+        {!doc.project_id && projects && projects.length > 0 && (
+          <AssignDocumentForm
+            documentId={doc.id}
+            storagePath={doc.storage_path}
+            projects={projects}
+          />
+        )}
+        <DeleteButton
+          table="documents"
+          id={doc.id}
+          confirmText={`${doc.name} verwijderen? Dit kan niet ongedaan worden gemaakt.`}
+          beforeDelete={async () => {
+            await supabase.storage.from("documents").remove([doc.storage_path]);
+          }}
+        />
+      </div>
     </div>
   );
 }

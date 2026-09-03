@@ -4,6 +4,7 @@ import Badge from "@/components/Badge";
 import RiskDonutChart from "@/components/RiskDonutChart";
 import DeleteButton from "@/components/DeleteButton";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
+import ManagePhasesForm from "@/components/ManagePhasesForm";
 import EditModal from "@/components/EditModal";
 import Link from "next/link";
 import Image from "next/image";
@@ -32,6 +33,7 @@ export default async function DashboardPage({
     { data: registrations },
     { data: projectMembers },
     { data: viewerProfile },
+    { data: activityLog },
   ] = await Promise.all([
     supabase
       .from("projects")
@@ -54,7 +56,7 @@ export default async function DashboardPage({
       .eq("project_id", projectId)
       .order("snapshot_date", { ascending: false })
       .limit(1),
-    supabase.from("phases").select("*").order("number"),
+    supabase.from("phases").select("*").eq("project_id", projectId).order("number"),
     supabase
       .from("registrations")
       .select("*")
@@ -69,6 +71,12 @@ export default async function DashboardPage({
       .select("can_see_hidden")
       .eq("id", user?.id ?? "")
       .single(),
+    supabase
+      .from("activity_log")
+      .select("*, profiles(full_name)")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false })
+      .limit(15),
   ]);
 
   const canSeeHidden = viewerProfile?.can_see_hidden ?? false;
@@ -356,6 +364,32 @@ export default async function DashboardPage({
           )}
         </div>
       </div>
+
+      <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+        <h2 className="mb-4 font-display text-lg text-ink">Activiteit</h2>
+        <div className="space-y-2">
+          {(activityLog ?? []).map((a: any) => (
+            <div key={a.id} className="flex items-start gap-2 text-sm">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
+              <p className="text-ink/70">
+                <span className="font-medium text-ink">
+                  {a.profiles?.full_name ?? "Iemand"}
+                </span>{" "}
+                {a.action} {a.entity_type} "{a.entity_label}"
+                {a.detail ? ` (${a.detail})` : ""}
+                <span className="ml-1 text-xs text-ink/40">
+                  · {new Date(a.created_at).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })}
+                </span>
+              </p>
+            </div>
+          ))}
+          {(activityLog ?? []).length === 0 && (
+            <p className="text-sm text-ink/40">Nog geen activiteit geregistreerd.</p>
+          )}
+        </div>
+      </div>
+
+      <ManagePhasesForm projectId={projectId} phases={phases ?? []} />
 
       <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
         <h2 className="mb-3 font-display text-lg text-ink/60">Gevarenzone</h2>

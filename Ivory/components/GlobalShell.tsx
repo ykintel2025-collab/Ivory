@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
+import NewProjectForm from "@/components/NewProjectForm";
 
 const NAV = [
   { href: "/projects", label: "Dashboard", icon: "◇" },
@@ -57,9 +58,10 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
+        <NewProjectForm variant="sidebar" />
         <button
           onClick={handleLogout}
-          className="mt-4 rounded-lg px-3 py-2 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"
+          className="mt-2 rounded-lg px-3 py-2 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"
         >
           Uitloggen
         </button>
@@ -106,6 +108,9 @@ export default function GlobalShell({ children }: { children: React.ReactNode })
                 </Link>
               );
             })}
+            <div className="pt-2">
+              <NewProjectForm variant="sidebar" />
+            </div>
             <button
               onClick={handleLogout}
               className="mt-2 w-full rounded-lg px-3 py-3 text-left text-sm text-ivory/50 hover:bg-ink-soft hover:text-ivory"

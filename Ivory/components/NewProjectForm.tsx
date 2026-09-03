@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function NewProjectForm() {
+export default function NewProjectForm({
+  variant = "button",
+}: {
+  variant?: "button" | "sidebar";
+}) {
   const supabase = createClient();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -51,84 +55,91 @@ export default function NewProjectForm() {
     }
 
     setLoading(false);
+    setOpen(false);
     router.push(`/projects/${(project as any).id}/dashboard`);
     router.refresh();
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft"
-      >
-        + Nieuw project
-      </button>
-    );
-  }
+  const triggerClass =
+    variant === "sidebar"
+      ? "flex items-center gap-2 rounded-lg border border-gold/40 px-3 py-2 text-left text-sm font-medium text-gold hover:bg-ink-soft"
+      : "rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft";
 
   return (
-    <form
-      onSubmit={handleCreate}
-      className="w-full max-w-md space-y-3 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm"
-    >
-      <h2 className="font-display text-lg text-ink">Nieuw project</h2>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-ink/70">
-          Projectnaam
-        </label>
-        <input
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
-          placeholder="bijv. Shajar Hospital"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-ink/70">
-          Opdrachtgever
-        </label>
-        <input
-          value={client}
-          onChange={(e) => setClient(e.target.value)}
-          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
-          placeholder="bijv. QHC Architects & Engineers"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-ink/70">
-          Locatie
-        </label>
-        <input
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
-          placeholder="bijv. Dibba Al Husn, VAE"
-        />
-      </div>
+    <>
+      <button onClick={() => setOpen(true)} className={triggerClass}>
+        {variant === "sidebar" ? "+ Nieuw project" : "+ Nieuw project"}
+      </button>
 
-      {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-          {error}
-        </p>
-      )}
-
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft disabled:opacity-60"
-        >
-          {loading ? "Bezig..." : "Aanmaken"}
-        </button>
-        <button
-          type="button"
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
           onClick={() => setOpen(false)}
-          className="rounded-lg px-4 py-2 text-sm text-ink/50 hover:bg-ivory"
         >
-          Annuleren
-        </button>
-      </div>
-    </form>
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleCreate}
+            className="w-full max-w-md space-y-3 rounded-xl border border-ivory-line bg-ivory-card p-5 shadow-lg"
+          >
+            <h2 className="font-display text-lg text-ink">Nieuw project</h2>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Projectnaam
+              </label>
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+                placeholder="bijv. Shajar Hospital"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Opdrachtgever
+              </label>
+              <input
+                value={client}
+                onChange={(e) => setClient(e.target.value)}
+                className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Locatie
+              </label>
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
+              />
+            </div>
+
+            {error && (
+              <p className="rounded-lg bg-brick-soft px-3 py-2 text-xs text-brick">
+                {error}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-ivory hover:bg-ink-soft disabled:opacity-60"
+              >
+                {loading ? "Bezig..." : "Aanmaken"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-4 py-2 text-sm text-ink/60 hover:bg-ivory"
+              >
+                Annuleren
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   );
 }

@@ -2,9 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import NewProjectForm from "@/components/NewProjectForm";
 import StatCard from "@/components/StatCard";
-import Badge from "@/components/Badge";
 import MyTasksList from "@/components/MyTasksList";
 import GlobalShell from "@/components/GlobalShell";
+import QuickAddTaskForm from "@/components/QuickAddTaskForm";
+import UploadDocumentForm from "@/components/UploadDocumentForm";
+import DocumentRow from "@/components/DocumentRow";
+import QuickDeleteProjectButton from "@/components/QuickDeleteProjectButton";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +26,7 @@ export default async function ProjectsPage() {
     { data: registrations },
     { data: myTasksRaw },
     { data: recentDocuments },
+    { data: allProfiles },
   ] = await Promise.all([
     supabase
       .from("project_members")
@@ -59,13 +63,13 @@ export default async function ProjectsPage() {
       .select("*, projects(name), profiles(full_name)")
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase.from("profiles").select("id, full_name").order("full_name"),
   ]);
 
   const projects = (memberships ?? [])
     .map((m: any) => m.projects)
     .filter(Boolean);
 
-  // Per project: open hoge risico's + taakvoortgang, voor de kaarten
   const projectIds = projects.map((p: any) => p.id);
   const [{ data: allRisksForCards }, { data: allTasksForCards }] = await Promise.all([
     supabase.from("risks").select("project_id, rating, status").in("project_id", projectIds.length ? projectIds : ["00000000-0000-0000-0000-000000000000"]),
@@ -120,117 +124,90 @@ export default async function ProjectsPage() {
     project_name: t.projects?.name ?? "",
   }));
 
+  const ownerOptions = (allProfiles ?? []).map((p: any) => ({ id: p.id, full_name: p.full_name }));
+  const projectOptions = projects.map((p: any) => ({ id: p.id, name: p.name }));
+
   return (
     <GlobalShell>
       <div className="space-y-10">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl text-ink">Dashboard</h1>
-            <p className="text-sm text-ink/50">
-              Overzicht over al je projecten heen
-            </p>
-          </div>
+        <div>
+          <h1 className="font-display text-3xl text-ink">Dashboard</h1>
+          <p className="text-sm text-ink/50">
+            Overzicht over al je projecten heen
+          </p>
         </div>
 
-        {/* Globaal overzicht */}
+        {/* Globaal overzicht — klein, alleen als indicator */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
           <StatCard label="Mijn open taken" value={myTasks.length} href="#mijn-taken" />
+          <StatCard label="Openstaande taken" value={(openTasks ?? []).length} href="#mijn-taken" />
           <StatCard
-            label="Open hoge risico's"
+            label="Hoge risico's"
             value={(openHighRisks ?? []).length}
             tone={(openHighRisks ?? []).length > 0 ? "danger" : "success"}
-            href="#hoge-risicos"
+            href="#projecten"
           />
           <StatCard
-            label="Geblokkeerd (wacht op extern)"
+            label="Wacht op extern"
             value={(openBlockers ?? []).length}
             tone={(openBlockers ?? []).length > 0 ? "danger" : "success"}
             href="#wachten-op-extern"
           />
-          <StatCard label="Openstaande taken" value={(openTasks ?? []).length} href="#mijn-taken" />
           <StatCard label="Actieve projecten" value={projects.length} href="#projecten" />
         </div>
 
-        {/* Mijn taken */}
-        <div id="mijn-taken" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-          <h2 className="mb-4 font-display text-lg text-ink">Mijn taken</h2>
-          <MyTasksList tasks={myTasks} />
+        {/* Taken — hoofdfocus */}
+        <div id="mijn-taken" className="scroll-mt-6 space-y-3">
+          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+            <h2 className="mb-4 font-display text-lg text-ink">Mijn taken</h2>
+            <MyTasksList tasks={myTasks} />
+          </div>
+          <QuickAddTaskForm projects={projectOptions} profiles={ownerOptions} />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div id="hoge-risicos" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-            <h2 className="mb-4 font-display text-lg text-ink">Open hoge risico's</h2>
-            <div className="space-y-2">
-              {(openHighRisks ?? []).slice(0, 6).map((r: any) => (
-                <Link
-                  key={r.id}
-                  href={`/projects/${r.project_id}/risks`}
-                  className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
-                >
-                  <div>
-                    <p className="text-sm text-ink/80">{r.title}</p>
-                    <p className="text-xs text-ink/40">{r.projects?.name}</p>
-                  </div>
-                  <Badge value="hoog" />
-                </Link>
-              ))}
-              {(openHighRisks ?? []).length === 0 && (
-                <p className="text-sm text-ink/40">Geen open hoge risico's. 👍</p>
-              )}
+        {/* Documenten — prominent, met upload */}
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-lg text-ink">Documenten</h2>
+            <div className="flex items-center gap-3">
+              <Link href="/documents" className="text-xs font-medium text-ink/50 hover:underline">
+                Alle documenten →
+              </Link>
             </div>
           </div>
-
-          <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-            <h2 className="mb-4 font-display text-lg text-ink">Eerstvolgende deadlines</h2>
-            {upcomingDeadlines.length === 0 ? (
-              <p className="text-sm text-ink/40">Geen deadlines gevonden.</p>
-            ) : (
-              <ul className="space-y-3">
-                {upcomingDeadlines.map((d, i) => (
-                  <li key={i}>
-                    <Link href={d.href} className="flex items-center justify-between rounded-lg text-sm transition hover:text-gold">
-                      <div>
-                        <p className="font-medium text-ink">{d.label}</p>
-                        <p className="text-xs text-ink/40">{d.type} · {d.project}</p>
-                      </div>
-                      <span className="text-xs font-medium text-ink/50">
-                        {new Date(d.date).toLocaleDateString("nl-NL")}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        {/* Documenten-overzicht */}
-        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-ink">Recente documenten</h2>
-            <Link href="/documents" className="text-xs font-medium text-ink/50 hover:underline">
-              Alle documenten →
-            </Link>
-          </div>
-          <div className="space-y-2">
+          <UploadDocumentForm projects={projectOptions} />
+          <div className="mt-3 space-y-2">
             {(recentDocuments ?? []).map((doc: any) => (
-              <Link
-                key={doc.id}
-                href={`/projects/${doc.project_id}/documents`}
-                className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-ink/80">{doc.name}</p>
-                  <p className="text-xs text-ink/40">
-                    {doc.projects?.name} · {new Date(doc.created_at).toLocaleDateString("nl-NL")}
-                  </p>
-                </div>
-              </Link>
+              <DocumentRow key={doc.id} doc={doc} projects={projectOptions} />
             ))}
             {(recentDocuments ?? []).length === 0 && (
               <p className="text-sm text-ink/40">Nog geen documenten geüpload.</p>
             )}
           </div>
+        </div>
+
+        {/* Deadlines */}
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <h2 className="mb-4 font-display text-lg text-ink">Eerstvolgende deadlines</h2>
+          {upcomingDeadlines.length === 0 ? (
+            <p className="text-sm text-ink/40">Geen deadlines gevonden.</p>
+          ) : (
+            <ul className="space-y-3">
+              {upcomingDeadlines.map((d, i) => (
+                <li key={i}>
+                  <Link href={d.href} className="flex items-center justify-between rounded-lg text-sm transition hover:text-gold">
+                    <div>
+                      <p className="font-medium text-ink">{d.label}</p>
+                      <p className="text-xs text-ink/40">{d.type} · {d.project}</p>
+                    </div>
+                    <span className="text-xs font-medium text-ink/50">
+                      {new Date(d.date).toLocaleDateString("nl-NL")}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {(openBlockers ?? []).length > 0 && (
@@ -249,14 +226,13 @@ export default async function ProjectsPage() {
                       {b.projects?.name} · wacht op {b.contacts?.name ?? "onbekend"}
                     </p>
                   </div>
-                  <Badge value="open" />
                 </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* Projecten */}
+        {/* Projecten — risico/voortgang alleen als klein indicatorpuntje */}
         <div id="projecten" className="scroll-mt-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-lg text-ink">Jouw projecten</h2>
@@ -270,43 +246,45 @@ export default async function ProjectsPage() {
                 ? Math.round((stats.doneTasks / stats.totalTasks) * 100)
                 : 0;
               return (
-                <Link
-                  key={p.id}
-                  href={`/projects/${p.id}/dashboard`}
-                  className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm transition hover:border-gold"
-                >
-                  <div className="mb-1 flex items-center justify-between">
-                    <p className="font-display text-lg text-ink">{p.name}</p>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        p.status === "actief"
-                          ? "bg-teal-soft text-teal"
-                          : p.status === "gepauzeerd"
-                          ? "bg-amber-soft text-amber"
-                          : "bg-ink/5 text-ink/50"
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                  {p.client && <p className="text-xs text-ink/50">{p.client}</p>}
-                  {p.location && <p className="text-xs text-ink/40">{p.location}</p>}
-
-                  <div className="mt-4 flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`h-2 w-2 rounded-full ${stats.highRisks > 0 ? "bg-brick" : "bg-teal"}`} />
-                      <span className="text-xs text-ink/60">
-                        {stats.highRisks > 0 ? `${stats.highRisks} hoog risico` : "Geen hoge risico's"}
+                <div key={p.id} className="relative">
+                  <Link
+                    href={`/projects/${p.id}/dashboard`}
+                    className="block rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm transition hover:border-gold"
+                  >
+                    <div className="mb-1 flex items-center justify-between pr-6">
+                      <p className="font-display text-lg text-ink">{p.name}</p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          p.status === "actief"
+                            ? "bg-teal-soft text-teal"
+                            : p.status === "gepauzeerd"
+                            ? "bg-amber-soft text-amber"
+                            : "bg-ink/5 text-ink/50"
+                        }`}
+                      >
+                        {p.status}
                       </span>
                     </div>
-                    <div className="flex flex-1 items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ivory">
-                        <div className="h-1.5 rounded-full bg-gold" style={{ width: `${progressPct}%` }} />
+                    {p.client && <p className="text-xs text-ink/50">{p.client}</p>}
+                    {p.location && <p className="text-xs text-ink/40">{p.location}</p>}
+
+                    <div className="mt-4 flex items-center gap-4">
+                      <span
+                        title={stats.highRisks > 0 ? `${stats.highRisks} hoog risico` : "Geen hoge risico's"}
+                        className={`h-2 w-2 shrink-0 rounded-full ${stats.highRisks > 0 ? "bg-brick" : "bg-teal"}`}
+                      />
+                      <div className="flex flex-1 items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ivory">
+                          <div className="h-1.5 rounded-full bg-gold" style={{ width: `${progressPct}%` }} />
+                        </div>
+                        <span className="text-xs text-ink/40">{progressPct}%</span>
                       </div>
-                      <span className="text-xs text-ink/40">{progressPct}%</span>
                     </div>
+                  </Link>
+                  <div className="absolute right-4 top-4">
+                    <QuickDeleteProjectButton projectId={p.id} projectName={p.name} />
                   </div>
-                </Link>
+                </div>
               );
             })}
             {projects.length === 0 && (
