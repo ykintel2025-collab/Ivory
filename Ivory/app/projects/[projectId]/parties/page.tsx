@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import DeleteButton from "@/components/DeleteButton";
 import AddNewContactForm from "@/components/AddNewContactForm";
 import AssignContactForm from "@/components/AssignContactForm";
+import AddCommunicationLogForm from "@/components/AddCommunicationLogForm";
 import EditModal from "@/components/EditModal";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function PartiesPage({
   ] = await Promise.all([
     supabase
       .from("project_contacts")
-      .select("*, contacts(id, name, type, contact_name, contact_email)")
+      .select("*, contacts(id, name, type, contact_name, contact_email, contact_phone)")
       .eq("project_id", projectId)
       .order("created_at"),
     supabase
@@ -167,6 +168,28 @@ export default async function PartiesPage({
                   {pc.contacts?.contact_email && ` · ${pc.contacts.contact_email}`}
                 </p>
               )}
+              {(pc.contacts?.contact_email || pc.contacts?.contact_phone) && (
+                <div className="mt-2 flex gap-2">
+                  {pc.contacts?.contact_email && (
+                    <a
+                      href={`mailto:${pc.contacts.contact_email}`}
+                      className="rounded-md bg-ivory px-2 py-1 text-xs font-medium text-ink/70 hover:bg-ivory-line"
+                    >
+                      ✉ Mail
+                    </a>
+                  )}
+                  {pc.contacts?.contact_phone && (
+                    <a
+                      href={`https://wa.me/${pc.contacts.contact_phone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-md bg-ivory px-2 py-1 text-xs font-medium text-ink/70 hover:bg-ivory-line"
+                    >
+                      💬 WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
               {pc.notes && (
                 <p className="mt-2 text-xs text-ink/50">{pc.notes}</p>
               )}
@@ -182,9 +205,20 @@ export default async function PartiesPage({
 
       {/* Communicatielog */}
       <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-        <h2 className="mb-4 font-display text-lg text-ink">
-          Recente communicatie
-        </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-lg text-ink">
+            Recente communicatie
+          </h2>
+        </div>
+        <div className="mb-4">
+          <AddCommunicationLogForm
+            projectId={projectId}
+            contacts={(projectContacts ?? []).map((pc: any) => ({
+              contact_id: pc.contact_id,
+              name: pc.contacts?.name ?? "Onbekend",
+            }))}
+          />
+        </div>
         <div className="space-y-3">
           {(logs ?? []).map((log: any) => (
             <div

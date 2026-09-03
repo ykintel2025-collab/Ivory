@@ -27,6 +27,7 @@ export default function DocumentRow({
             href={doc.url}
             target="_blank"
             rel="noopener noreferrer"
+            download={doc.name}
             className="block truncate text-sm font-medium text-ink hover:underline"
           >
             {doc.name}

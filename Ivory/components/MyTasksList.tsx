@@ -10,7 +10,7 @@ type MyTask = {
   title: string;
   due_date: string | null;
   urgency: string | null;
-  project_id: string;
+  project_id: string | null;
   project_name: string;
 };
 
@@ -51,12 +51,16 @@ export default function MyTasksList({ tasks }: { tasks: MyTask[] }) {
             ✓
           </button>
           <div className="min-w-0 flex-1">
-            <Link
-              href={`/projects/${t.project_id}/tasks`}
-              className="block truncate text-sm text-ink hover:underline"
-            >
-              {t.title}
-            </Link>
+            {t.project_id ? (
+              <Link
+                href={`/projects/${t.project_id}/tasks`}
+                className="block truncate text-sm text-ink hover:underline"
+              >
+                {t.title}
+              </Link>
+            ) : (
+              <p className="truncate text-sm text-ink">{t.title}</p>
+            )}
             <p className="text-xs text-ink/40">{t.project_name}</p>
           </div>
           {t.urgency === "urgent" && (

@@ -18,7 +18,7 @@ export default function QuickAddTaskForm({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
+  const [projectId, setProjectId] = useState("");
   const [ownerId, setOwnerId] = useState("");
   const [urgency, setUrgency] = useState("normaal");
   const [dueDate, setDueDate] = useState("");
@@ -27,14 +27,10 @@ export default function QuickAddTaskForm({
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!projectId) {
-      setError("Kies eerst een project.");
-      return;
-    }
     setLoading(true);
     setError(null);
 
-    if (ownerId) {
+    if (projectId && ownerId) {
       await supabase.from("project_members").upsert(
         { project_id: projectId, user_id: ownerId, role: "lid", visible: true },
         { onConflict: "project_id,user_id", ignoreDuplicates: true }
@@ -42,7 +38,7 @@ export default function QuickAddTaskForm({
     }
 
     const { error: insertError } = await supabase.from("tasks").insert({
-      project_id: projectId,
+      project_id: projectId || null,
       title,
       owner_id: ownerId || null,
       urgency,
@@ -63,8 +59,6 @@ export default function QuickAddTaskForm({
     setOpen(false);
     router.refresh();
   }
-
-  if (projects.length === 0) return null;
 
   if (!open) {
     return (
@@ -96,13 +90,13 @@ export default function QuickAddTaskForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-ink/60">Project</label>
+          <label className="mb-1 block text-xs font-medium text-ink/60">Project (optioneel)</label>
           <select
-            required
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             className="w-full rounded-lg border border-ivory-line bg-ivory-card px-3 py-2 text-sm text-ink focus:border-ink focus:outline-none"
           >
+            <option value="">Los (geen project)</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}

@@ -65,6 +65,15 @@ export default async function ProjectsPage() {
     supabase.from("profiles").select("id, full_name").order("full_name"),
   ]);
 
+  const recentDocsWithUrls = await Promise.all(
+    (recentDocuments ?? []).map(async (d: any) => {
+      const { data: signed } = await supabase.storage
+        .from("documents")
+        .createSignedUrl(d.storage_path, 3600);
+      return { ...d, url: signed?.signedUrl ?? null };
+    })
+  );
+
   const projects = (memberships ?? [])
     .map((m: any) => m.projects)
     .filter(Boolean);
@@ -120,7 +129,7 @@ export default async function ProjectsPage() {
     due_date: t.due_date,
     urgency: t.urgency,
     project_id: t.project_id,
-    project_name: t.projects?.name ?? "",
+    project_name: t.projects?.name ?? "Los (geen project)",
   }));
 
   const ownerOptions = (allProfiles ?? []).map((p: any) => ({ id: p.id, full_name: p.full_name }));
@@ -137,15 +146,9 @@ export default async function ProjectsPage() {
         </div>
 
         {/* Globaal overzicht — klein, alleen als indicator */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Mijn open taken" value={myTasks.length} href="#mijn-taken" />
           <StatCard label="Openstaande taken" value={(openTasks ?? []).length} href="#mijn-taken" />
-          <StatCard
-            label="Hoge risico's"
-            value={(openHighRisks ?? []).length}
-            tone={(openHighRisks ?? []).length > 0 ? "danger" : "success"}
-            href="#projecten"
-          />
           <StatCard
             label="Wacht op extern"
             value={(openBlockers ?? []).length}
@@ -176,10 +179,10 @@ export default async function ProjectsPage() {
           </div>
           <UploadDocumentForm projects={projectOptions} />
           <div className="mt-3 space-y-2">
-            {(recentDocuments ?? []).map((doc: any) => (
+            {(recentDocsWithUrls ?? []).map((doc: any) => (
               <DocumentRow key={doc.id} doc={doc} projects={projectOptions} />
             ))}
-            {(recentDocuments ?? []).length === 0 && (
+            {(recentDocsWithUrls ?? []).length === 0 && (
               <p className="text-sm text-ink/40">Nog geen documenten geüpload.</p>
             )}
           </div>
