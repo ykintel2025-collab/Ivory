@@ -35,8 +35,12 @@ export default function NewProjectForm() {
       .replace(/(^-|-$)/g, "");
 
     const { data: project, error: insertError } = await supabase
-      .from("projects")
-      .insert({ name, client, location, slug: `${slug}-${Date.now().toString(36)}` })
+      .rpc("create_project", {
+        p_name: name,
+        p_client: client,
+        p_location: location,
+        p_slug: `${slug}-${Date.now().toString(36)}`,
+      })
       .select()
       .single();
 
@@ -46,16 +50,8 @@ export default function NewProjectForm() {
       return;
     }
 
-    // Zeker stellen dat de aanmaker lid is (trigger doet dit ook, dit is een fallback)
-    await supabase.from("project_members").upsert({
-      project_id: project.id,
-      user_id: user.id,
-      role: "eigenaar",
-      visible: true,
-    });
-
     setLoading(false);
-    router.push(`/projects/${project.id}/dashboard`);
+    router.push(`/projects/${(project as any).id}/dashboard`);
     router.refresh();
   }
 
