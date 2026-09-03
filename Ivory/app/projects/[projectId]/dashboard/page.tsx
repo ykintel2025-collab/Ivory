@@ -3,6 +3,8 @@ import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
 import RiskDonutChart from "@/components/RiskDonutChart";
 import DeleteButton from "@/components/DeleteButton";
+import DeleteProjectButton from "@/components/DeleteProjectButton";
+import EditModal from "@/components/EditModal";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -33,7 +35,7 @@ export default async function DashboardPage({
   ] = await Promise.all([
     supabase
       .from("projects")
-      .select("name, client, location")
+      .select("name, client, location, status")
       .eq("id", projectId)
       .single(),
     supabase.from("risks").select("*").eq("project_id", projectId),
@@ -112,21 +114,62 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <Image
-          src="/logo-crest.png"
-          alt=""
-          width={40}
-          height={40}
-          className="h-10 w-10 shrink-0 rounded-full"
-        />
-        <div>
-          <h1 className="font-display text-2xl text-ink">
-            {project?.name ?? "Project"}
-          </h1>
-          <p className="text-sm text-ink/50">
-            {[project?.client, project?.location].filter(Boolean).join(" · ")}
-          </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/logo-crest.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-10 w-10 shrink-0 rounded-full"
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display text-2xl text-ink">
+                {project?.name ?? "Project"}
+              </h1>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  project?.status === "actief"
+                    ? "bg-teal-soft text-teal"
+                    : project?.status === "gepauzeerd"
+                    ? "bg-amber-soft text-amber"
+                    : "bg-ink/5 text-ink/50"
+                }`}
+              >
+                {project?.status ?? "actief"}
+              </span>
+              <EditModal
+                table="projects"
+                id={projectId}
+                title="Project bewerken"
+                initialValues={{
+                  name: project?.name,
+                  client: project?.client,
+                  location: project?.location,
+                  status: project?.status,
+                }}
+                fields={[
+                  { key: "name", label: "Projectnaam", type: "text" },
+                  { key: "client", label: "Opdrachtgever", type: "text" },
+                  { key: "location", label: "Locatie", type: "text" },
+                  {
+                    key: "status",
+                    label: "Status",
+                    type: "select",
+                    options: [
+                      { value: "actief", label: "Actief" },
+                      { value: "gepauzeerd", label: "Gepauzeerd" },
+                      { value: "afgerond", label: "Afgerond" },
+                    ],
+                  },
+                ]}
+              />
+            </div>
+            <p className="text-sm text-ink/50">
+              {[project?.client, project?.location].filter(Boolean).join(" · ")}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -312,6 +355,14 @@ export default async function DashboardPage({
             <p className="text-sm text-ink/40">Geen open hoge risico's.</p>
           )}
         </div>
+      </div>
+
+      <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+        <h2 className="mb-3 font-display text-lg text-ink/60">Gevarenzone</h2>
+        <DeleteProjectButton
+          projectId={projectId}
+          projectName={project?.name ?? ""}
+        />
       </div>
     </div>
   );

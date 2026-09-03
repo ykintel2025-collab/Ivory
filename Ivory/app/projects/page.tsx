@@ -4,6 +4,7 @@ import NewProjectForm from "@/components/NewProjectForm";
 import StatCard from "@/components/StatCard";
 import Badge from "@/components/Badge";
 import MyTasksList from "@/components/MyTasksList";
+import GlobalShell from "@/components/GlobalShell";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +22,12 @@ export default async function ProjectsPage() {
     { data: openTasks },
     { data: registrations },
     { data: myTasksRaw },
+    { data: recentDocuments },
   ] = await Promise.all([
     supabase
       .from("project_members")
       .select("project_id, role, projects(id, name, client, location, status)")
       .eq("user_id", user?.id ?? ""),
-    // RLS scoopt dit automatisch tot projecten waar de gebruiker lid van is
     supabase
       .from("risks")
       .select("*, projects(name)")
@@ -53,11 +54,41 @@ export default async function ProjectsPage() {
       .eq("owner_id", user?.id ?? "")
       .neq("status", "klaar")
       .order("due_date", { ascending: true, nullsFirst: false }),
+    supabase
+      .from("documents")
+      .select("*, projects(name), profiles(full_name)")
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
 
   const projects = (memberships ?? [])
     .map((m: any) => m.projects)
     .filter(Boolean);
+
+  // Per project: open hoge risico's + taakvoortgang, voor de kaarten
+  const projectIds = projects.map((p: any) => p.id);
+  const [{ data: allRisksForCards }, { data: allTasksForCards }] = await Promise.all([
+    supabase.from("risks").select("project_id, rating, status").in("project_id", projectIds.length ? projectIds : ["00000000-0000-0000-0000-000000000000"]),
+    supabase.from("tasks").select("project_id, status").in("project_id", projectIds.length ? projectIds : ["00000000-0000-0000-0000-000000000000"]),
+  ]);
+
+  const projectStats = new Map<string, { highRisks: number; doneTasks: number; totalTasks: number }>();
+  for (const p of projects) {
+    projectStats.set(p.id, { highRisks: 0, doneTasks: 0, totalTasks: 0 });
+  }
+  for (const r of allRisksForCards ?? []) {
+    if (r.rating === "hoog" && r.status === "open") {
+      const s = projectStats.get(r.project_id);
+      if (s) s.highRisks++;
+    }
+  }
+  for (const t of allTasksForCards ?? []) {
+    const s = projectStats.get(t.project_id);
+    if (s) {
+      s.totalTasks++;
+      if (t.status === "klaar") s.doneTasks++;
+    }
+  }
 
   const upcomingDeadlines = [
     ...(openTasks ?? [])
@@ -90,8 +121,8 @@ export default async function ProjectsPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
-      <div className="mx-auto max-w-5xl space-y-10">
+    <GlobalShell>
+      <div className="space-y-10">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl text-ink">Dashboard</h1>
@@ -99,21 +130,11 @@ export default async function ProjectsPage() {
               Overzicht over al je projecten heen
             </p>
           </div>
-          <Link
-            href="/contacts"
-            className="shrink-0 rounded-lg border border-ivory-line bg-ivory-card px-4 py-2 text-sm font-medium text-ink hover:border-gold"
-          >
-            Relaties beheren
-          </Link>
         </div>
 
         {/* Globaal overzicht */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <StatCard
-            label="Mijn open taken"
-            value={myTasks.length}
-            href="#mijn-taken"
-          />
+          <StatCard label="Mijn open taken" value={myTasks.length} href="#mijn-taken" />
           <StatCard
             label="Open hoge risico's"
             value={(openHighRisks ?? []).length}
@@ -126,16 +147,8 @@ export default async function ProjectsPage() {
             tone={(openBlockers ?? []).length > 0 ? "danger" : "success"}
             href="#wachten-op-extern"
           />
-          <StatCard
-            label="Openstaande taken"
-            value={(openTasks ?? []).length}
-            href="#mijn-taken"
-          />
-          <StatCard
-            label="Actieve projecten"
-            value={projects.length}
-            href="#projecten"
-          />
+          <StatCard label="Openstaande taken" value={(openTasks ?? []).length} href="#mijn-taken" />
+          <StatCard label="Actieve projecten" value={projects.length} href="#projecten" />
         </div>
 
         {/* Mijn taken */}
@@ -145,11 +158,8 @@ export default async function ProjectsPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Openstaande hoge risico's, alle projecten */}
           <div id="hoge-risicos" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-            <h2 className="mb-4 font-display text-lg text-ink">
-              Open hoge risico's
-            </h2>
+            <h2 className="mb-4 font-display text-lg text-ink">Open hoge risico's</h2>
             <div className="space-y-2">
               {(openHighRisks ?? []).slice(0, 6).map((r: any) => (
                 <Link
@@ -165,33 +175,23 @@ export default async function ProjectsPage() {
                 </Link>
               ))}
               {(openHighRisks ?? []).length === 0 && (
-                <p className="text-sm text-ink/40">
-                  Geen open hoge risico's. 👍
-                </p>
+                <p className="text-sm text-ink/40">Geen open hoge risico's. 👍</p>
               )}
             </div>
           </div>
 
-          {/* Eerstvolgende deadlines, alle projecten */}
           <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-            <h2 className="mb-4 font-display text-lg text-ink">
-              Eerstvolgende deadlines
-            </h2>
+            <h2 className="mb-4 font-display text-lg text-ink">Eerstvolgende deadlines</h2>
             {upcomingDeadlines.length === 0 ? (
               <p className="text-sm text-ink/40">Geen deadlines gevonden.</p>
             ) : (
               <ul className="space-y-3">
                 {upcomingDeadlines.map((d, i) => (
                   <li key={i}>
-                    <Link
-                      href={d.href}
-                      className="flex items-center justify-between rounded-lg text-sm transition hover:text-gold"
-                    >
+                    <Link href={d.href} className="flex items-center justify-between rounded-lg text-sm transition hover:text-gold">
                       <div>
                         <p className="font-medium text-ink">{d.label}</p>
-                        <p className="text-xs text-ink/40">
-                          {d.type} · {d.project}
-                        </p>
+                        <p className="text-xs text-ink/40">{d.type} · {d.project}</p>
                       </div>
                       <span className="text-xs font-medium text-ink/50">
                         {new Date(d.date).toLocaleDateString("nl-NL")}
@@ -204,12 +204,38 @@ export default async function ProjectsPage() {
           </div>
         </div>
 
-        {/* Wachten op extern, alle projecten */}
+        {/* Documenten-overzicht */}
+        <div className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg text-ink">Recente documenten</h2>
+            <Link href="/documents" className="text-xs font-medium text-ink/50 hover:underline">
+              Alle documenten →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {(recentDocuments ?? []).map((doc: any) => (
+              <Link
+                key={doc.id}
+                href={`/projects/${doc.project_id}/documents`}
+                className="flex items-center justify-between rounded-lg border border-ivory-line px-3 py-2 transition hover:border-gold"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-ink/80">{doc.name}</p>
+                  <p className="text-xs text-ink/40">
+                    {doc.projects?.name} · {new Date(doc.created_at).toLocaleDateString("nl-NL")}
+                  </p>
+                </div>
+              </Link>
+            ))}
+            {(recentDocuments ?? []).length === 0 && (
+              <p className="text-sm text-ink/40">Nog geen documenten geüpload.</p>
+            )}
+          </div>
+        </div>
+
         {(openBlockers ?? []).length > 0 && (
           <div id="wachten-op-extern" className="scroll-mt-6 rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm">
-            <h2 className="mb-4 font-display text-lg text-ink">
-              Wachten op extern
-            </h2>
+            <h2 className="mb-4 font-display text-lg text-ink">Wachten op extern</h2>
             <div className="space-y-2">
               {(openBlockers ?? []).map((b: any) => (
                 <Link
@@ -233,47 +259,62 @@ export default async function ProjectsPage() {
         {/* Projecten */}
         <div id="projecten" className="scroll-mt-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-ink">
-              Jouw projecten
-            </h2>
+            <h2 className="font-display text-lg text-ink">Jouw projecten</h2>
             <NewProjectForm />
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            {projects.map((p: any) => (
-              <Link
-                key={p.id}
-                href={`/projects/${p.id}/dashboard`}
-                className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm transition hover:border-gold"
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <p className="font-display text-lg text-ink">{p.name}</p>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      p.status === "actief"
-                        ? "bg-teal-soft text-teal"
-                        : p.status === "gepauzeerd"
-                        ? "bg-amber-soft text-amber"
-                        : "bg-ink/5 text-ink/50"
-                    }`}
-                  >
-                    {p.status}
-                  </span>
-                </div>
-                {p.client && <p className="text-xs text-ink/50">{p.client}</p>}
-                {p.location && (
-                  <p className="text-xs text-ink/40">{p.location}</p>
-                )}
-              </Link>
-            ))}
+            {projects.map((p: any) => {
+              const stats = projectStats.get(p.id) ?? { highRisks: 0, doneTasks: 0, totalTasks: 0 };
+              const progressPct = stats.totalTasks
+                ? Math.round((stats.doneTasks / stats.totalTasks) * 100)
+                : 0;
+              return (
+                <Link
+                  key={p.id}
+                  href={`/projects/${p.id}/dashboard`}
+                  className="rounded-xl border border-ivory-line bg-ivory-card p-6 shadow-sm transition hover:border-gold"
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="font-display text-lg text-ink">{p.name}</p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        p.status === "actief"
+                          ? "bg-teal-soft text-teal"
+                          : p.status === "gepauzeerd"
+                          ? "bg-amber-soft text-amber"
+                          : "bg-ink/5 text-ink/50"
+                      }`}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
+                  {p.client && <p className="text-xs text-ink/50">{p.client}</p>}
+                  {p.location && <p className="text-xs text-ink/40">{p.location}</p>}
+
+                  <div className="mt-4 flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`h-2 w-2 rounded-full ${stats.highRisks > 0 ? "bg-brick" : "bg-teal"}`} />
+                      <span className="text-xs text-ink/60">
+                        {stats.highRisks > 0 ? `${stats.highRisks} hoog risico` : "Geen hoge risico's"}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ivory">
+                        <div className="h-1.5 rounded-full bg-gold" style={{ width: `${progressPct}%` }} />
+                      </div>
+                      <span className="text-xs text-ink/40">{progressPct}%</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
             {projects.length === 0 && (
-              <p className="text-sm text-ink/40">
-                Nog geen projecten. Maak je eerste project aan.
-              </p>
+              <p className="text-sm text-ink/40">Nog geen projecten. Maak je eerste project aan.</p>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </GlobalShell>
   );
 }

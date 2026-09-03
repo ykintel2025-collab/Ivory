@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
 import EditModal from "@/components/EditModal";
+import GlobalShell from "@/components/GlobalShell";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,10 @@ export default async function ContactsPage() {
     .order("name");
 
   return (
-    <div className="min-h-screen bg-ivory px-4 py-10 md:px-10">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <GlobalShell>
+      <div className="space-y-6">
         <div>
-          <Link href="/projects" className="text-xs font-medium text-ink/40 hover:text-ink">
-            ← Dashboard
-          </Link>
-          <h1 className="mt-2 font-display text-2xl text-ink">
+          <h1 className="font-display text-3xl text-ink">
             Relaties
           </h1>
           <p className="text-sm text-ink/50">
@@ -105,6 +103,6 @@ export default async function ContactsPage() {
           )}
         </div>
       </div>
-    </div>
+    </GlobalShell>
   );
 }
