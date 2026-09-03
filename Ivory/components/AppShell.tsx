@@ -15,6 +15,7 @@ function navItems(projectId: string) {
     { href: `/projects/${projectId}/tracker`, label: "Registraties", icon: "✚" },
     { href: `/projects/${projectId}/suppliers`, label: "Apparatuur", icon: "⬡" },
     { href: `/projects/${projectId}/parties`, label: "Partijen", icon: "◎" },
+    { href: `/projects/${projectId}/documents`, label: "Documenten", icon: "▦" },
   ];
 }
 

@@ -8,10 +8,12 @@ export default function DeleteButton({
   table,
   id,
   confirmText = "Weet je zeker dat je dit wilt verwijderen?",
+  beforeDelete,
 }: {
   table: string;
   id: string;
   confirmText?: string;
+  beforeDelete?: () => Promise<void>;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -20,6 +22,9 @@ export default function DeleteButton({
   async function handleDelete() {
     if (!window.confirm(confirmText)) return;
     setBusy(true);
+    if (beforeDelete) {
+      await beforeDelete();
+    }
     await supabase.from(table).delete().eq("id", id);
     setBusy(false);
     router.refresh();
